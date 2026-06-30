@@ -17,7 +17,7 @@
   /* ── SETUP OVERLAY ── */
   .setup-overlay { position: fixed; inset: 0; background: rgba(10,11,18,0.97); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .setup-overlay.hidden { display: none; }
-  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; max-width: 460px; width: 100%; box-shadow: 0 32px 80px rgba(0,0,0,0.6); }
+  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; max-width: 480px; width: 100%; box-shadow: 0 32px 80px rgba(0,0,0,0.6); }
   .setup-logo { font-size: 36px; margin-bottom: 16px; }
   .setup-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
   .setup-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
@@ -28,19 +28,23 @@
   .step-text a:hover { text-decoration: underline; }
   .step-text code { background: var(--surface2); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--text); }
   .setup-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-  .setup-tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 3px; margin-bottom: 18px; }
-  .setup-tab { flex: 1; padding: 8px; border-radius: 7px; border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-  .setup-tab.active { background: var(--surface2); color: var(--text); }
   .setup-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
-  .setup-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 9px; font-size: 14px; outline: none; font-family: monospace; margin-bottom: 14px; transition: border-color 0.15s; }
+  .setup-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 9px; font-size: 13px; outline: none; font-family: monospace; margin-bottom: 14px; transition: border-color 0.15s; }
   .setup-input:focus { border-color: var(--accent); }
   .setup-input::placeholder { color: var(--muted); font-family: inherit; }
-  .setup-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; margin-top: -10px; line-height: 1.5; }
-  .setup-hint strong { color: var(--accent2); }
+  textarea.setup-input { resize: vertical; min-height: 100px; font-size: 12px; line-height: 1.4; }
   .setup-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; background: var(--accent); color: #fff; cursor: pointer; transition: background 0.15s; }
   .setup-btn:hover { background: var(--accent2); }
   .setup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .setup-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); margin-top: 10px; font-size: 13px; }
+  .setup-btn-secondary:hover { background: var(--surface2); color: var(--text); }
   .setup-error { background: #f8717118; border: 1px solid #f8717133; color: var(--red); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 10px; display: none; }
+  .setup-or { text-align: center; color: var(--muted); font-size: 12px; margin: 12px 0; position: relative; }
+  .setup-or::before, .setup-or::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+  .setup-or::before { left: 0; } .setup-or::after { right: 0; }
+  .setup-back { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; padding: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 4px; }
+  .setup-back:hover { color: var(--text); }
+  .rules-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: monospace; font-size: 11px; color: var(--muted); white-space: pre; overflow-x: auto; margin: 8px 0 14px; line-height: 1.5; }
 
   /* ── SYNC BAR ── */
   .sync-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 28px; display: flex; align-items: center; gap: 10px; font-size: 12px; }
@@ -109,8 +113,6 @@
   .badge-en_pause { background: #8b90a822; color: var(--muted); }
   .badge-recurrent { background: #fb923c22; color: var(--orange); }
   .card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-  /* planning/milestones */
   .card-planning { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
   .card-planning-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .card-planning-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
@@ -209,72 +211,93 @@
     .sync-bar { padding: 8px 16px; }
     .form-row { grid-template-columns: 1fr; }
     .freq-grid { grid-template-columns: repeat(2,1fr); }
+    .setup-card { padding: 28px 24px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ── SETUP OVERLAY (shown on first launch) ── -->
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<!-- ── SETUP OVERLAY ── -->
 <div class="setup-overlay" id="setupOverlay">
   <div class="setup-card">
-    <div class="setup-logo">🔑</div>
-    <div class="setup-title">Connexion à JSONBin</div>
-    <div class="setup-sub">Choisis selon ta situation :</div>
 
-    <div class="setup-tabs">
-      <button class="setup-tab active" id="tabNew" onclick="switchSetupTab('new')">🖥 Premier appareil</button>
-      <button class="setup-tab" id="tabExisting" onclick="switchSetupTab('existing')">📱 Appareil supplémentaire</button>
-    </div>
-
-    <!-- Mode : premier appareil -->
-    <div id="modeNew">
+    <!-- SCREEN 1 : Configuration Firebase (première fois seulement) -->
+    <div id="screenConfig">
+      <div class="setup-logo">🔥</div>
+      <div class="setup-title">Configuration Firebase</div>
+      <div class="setup-sub">À faire une seule fois. Tes données seront synchronisées automatiquement sur tous tes appareils sans jamais ressaisir quoi que ce soit.</div>
       <div class="setup-step">
         <div class="step-num">1</div>
-        <div class="step-text">Va sur <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → crée un compte gratuit → <strong>API Keys</strong> → copie ta <strong>Master Key</strong>.</div>
+        <div class="step-text">Va sur <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → <strong>Add project</strong> → donne un nom → désactive Google Analytics → <strong>Create project</strong>.</div>
       </div>
       <div class="setup-step">
         <div class="step-num">2</div>
-        <div class="step-text">Colle-la ci-dessous → <strong>Connecter</strong>. L'app crée ton espace cloud automatiquement.</div>
+        <div class="step-text"><strong>Build → Realtime Database → Create database</strong> → choisis <code>europe-west1</code> → <strong>Start in test mode</strong> → Enable. Puis dans l'onglet <strong>Rules</strong>, colle :</div>
       </div>
+      <div class="rules-block">{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}</div>
       <div class="setup-step">
         <div class="step-num">3</div>
-        <div class="step-text">Note le <strong>Bin ID</strong> affiché en haut de l'app — tu en auras besoin sur le téléphone.</div>
-      </div>
-      <hr class="setup-divider">
-      <label class="setup-label">Master Key JSONBin</label>
-      <input type="password" class="setup-input" id="setupKey" placeholder="$2b$10$..." autocomplete="off">
-    </div>
-
-    <!-- Mode : appareil supplémentaire -->
-    <div id="modeExisting" style="display:none">
-      <div class="setup-step">
-        <div class="step-num">1</div>
-        <div class="step-text">Sur ton <strong>PC</strong>, regarde en haut de l'app — le <strong>Bin ID</strong> est affiché dans la barre verte. Copie-le.</div>
+        <div class="step-text"><strong>Build → Authentication → Get started → Sign-in method → Email/Password</strong> → active le premier toggle → Save.</div>
       </div>
       <div class="setup-step">
-        <div class="step-num">2</div>
-        <div class="step-text">Entre ta <strong>Master Key</strong> et le <strong>Bin ID</strong> ci-dessous pour te connecter au même espace.</div>
+        <div class="step-num">4</div>
+        <div class="step-text">⚙ <strong>Project Settings → General</strong> → scroll → <strong>Your apps → icône &lt;/&gt;</strong> → enregistre l'app → dans le SDK snippet, copie le contenu du bloc <code>firebaseConfig = { … }</code> et colle-le ci-dessous.</div>
       </div>
       <hr class="setup-divider">
-      <label class="setup-label">Master Key JSONBin</label>
-      <input type="password" class="setup-input" id="setupKeyExisting" placeholder="$2b$10$..." autocomplete="off">
-      <label class="setup-label">Bin ID</label>
-      <input type="text" class="setup-input" id="setupBinId" placeholder="64abc123..." autocomplete="off" style="font-size:13px">
-      <p class="setup-hint">Le Bin ID ressemble à <strong>64abc123def456...</strong> — visible dans la barre de sync sur le PC.</p>
+      <label class="setup-label">Config Firebase (JSON)</label>
+      <textarea class="setup-input" id="fbConfigInput" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "mon-projet.firebaseapp.com",
+  "databaseURL": "https://mon-projet-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "mon-projet",
+  "storageBucket": "mon-projet.firebasestorage.app",
+  "messagingSenderId": "123456789",
+  "appId": "1:123:web:abc"
+}'></textarea>
+      <button class="setup-btn" id="configNextBtn" onclick="doFbConfig()">Suivant →</button>
+      <div class="setup-error" id="setupError"></div>
     </div>
 
-    <button class="setup-btn" id="setupBtn" onclick="doSetup()">Connecter →</button>
-    <div class="setup-error" id="setupError"></div>
+    <!-- SCREEN 2 : Authentification -->
+    <div id="screenAuth" style="display:none">
+      <button class="setup-back" id="backToConfigBtn" onclick="goBackToConfig()" style="display:none">← Modifier la config</button>
+      <div class="setup-logo">🔑</div>
+      <div class="setup-title">Connexion</div>
+      <div class="setup-sub">Crée ton compte la première fois. Sur tous tes autres appareils, tu te connecteras automatiquement sans resaisir quoi que ce soit.</div>
+      <label class="setup-label">Email</label>
+      <input type="email" class="setup-input" id="authEmail" placeholder="toi@exemple.com" autocomplete="email">
+      <label class="setup-label">Mot de passe</label>
+      <input type="password" class="setup-input" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+      <button class="setup-btn" id="authSignInBtn" onclick="doSignIn()">Se connecter →</button>
+      <div class="setup-or">ou</div>
+      <button class="setup-btn setup-btn-secondary" id="authSignUpBtn" onclick="doSignUp()">Créer mon compte</button>
+      <div class="setup-error" id="setupError2"></div>
+    </div>
+
   </div>
 </div>
 
 <!-- ── SYNC BAR ── -->
 <div class="sync-bar" id="syncBar" style="display:none">
   <div class="sync-dot ok" id="syncDot"></div>
-  <div class="sync-label" id="syncLabel">Synchronisé · Bin ID : <strong id="syncBinId" style="cursor:pointer;color:var(--accent2)" onclick="copyBinId()" title="Cliquer pour copier">—</strong> <span id="copyHint" style="font-size:11px;color:var(--green);display:none">✓ copié</span></div>
+  <div class="sync-label" id="syncLabel">Synchronisé · <strong id="syncUserEmail"></strong></div>
   <div class="sync-actions">
     <button class="btn btn-ghost btn-sm" onclick="syncNow()">↻ Sync</button>
-    <button class="btn btn-ghost btn-sm" onclick="resetSetup()" title="Changer de compte">⚙</button>
+    <button class="btn btn-ghost btn-sm" onclick="doSignOut()" title="Se déconnecter">⎋</button>
   </div>
 </div>
 
@@ -398,187 +421,223 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ── CONFIG ───────────────────────────────────────────────────────────────────
-const LS_KEY   = 'mes_projets_v3';
-const LS_SETUP = 'jsonbin_setup';
-const JBIN     = 'https://api.jsonbin.io/v3';
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const LS_KEY       = 'mes_projets_v3';
+const LS_FB_CONFIG = 'fb_config';
 
-let projects = [];
+let projects     = [];
 let currentFilter = 'tous';
-let editingId = null;
-let currentFreq = 'hebdomadaire';
-let _saveTimer = null;
-let _cfg = null; // { key, binId }
+let editingId    = null;
+let currentFreq  = 'hebdomadaire';
+let _saveTimer   = null;
+let _db          = null;
+let _auth        = null;
+let _user        = null;
 
-// ── JSONBIN API ───────────────────────────────────────────────────────────────
-async function jbinCreate(key) {
-  const r = await fetch(`${JBIN}/b`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'mes-projets' },
-    body: JSON.stringify({ version: 3, projects: [] })
-  });
-  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
-  const d = await r.json();
-  return d.metadata.id;
-}
-
-async function jbinRead(key, binId) {
-  const r = await fetch(`${JBIN}/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': key }
-  });
-  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
-  const d = await r.json();
-  return d.record;
-}
-
-async function jbinWrite(key, binId, data) {
-  const r = await fetch(`${JBIN}/b/${binId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
-    body: JSON.stringify(data)
-  });
-  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
-}
-
-// ── SETUP ────────────────────────────────────────────────────────────────────
-let _setupMode = 'new';
-function switchSetupTab(mode) {
-  _setupMode = mode;
-  document.getElementById('modeNew').style.display = mode === 'new' ? 'block' : 'none';
-  document.getElementById('modeExisting').style.display = mode === 'existing' ? 'block' : 'none';
-  document.getElementById('tabNew').classList.toggle('active', mode === 'new');
-  document.getElementById('tabExisting').classList.toggle('active', mode === 'existing');
-  document.getElementById('setupError').style.display = 'none';
-}
-
-async function doSetup() {
-  const errEl = document.getElementById('setupError');
-  const btn = document.getElementById('setupBtn');
-  errEl.style.display = 'none';
-  btn.disabled = true; btn.textContent = 'Connexion en cours…';
-
+// ── FIREBASE INIT ─────────────────────────────────────────────────────────────
+function initFirebase(config) {
   try {
-    let key, binId;
+    if (!firebase.apps.length) firebase.initializeApp(config);
+    _auth = firebase.auth();
+    // Persist auth session across browser restarts (IndexedDB — survives mobile cache clear)
+    _auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    _db   = firebase.database();
 
-    if (_setupMode === 'new') {
-      key = document.getElementById('setupKey').value.trim();
-      if (!key) { showSetupError('Entre ta Master Key JSONBin.'); return; }
-      // Create a new bin
-      binId = await jbinCreate(key);
-    } else {
-      key = document.getElementById('setupKeyExisting').value.trim();
-      binId = document.getElementById('setupBinId').value.trim();
-      if (!key) { showSetupError('Entre ta Master Key.'); return; }
-      if (!binId) { showSetupError('Entre le Bin ID affiché sur ton autre appareil.'); return; }
-    }
-
-    // Verify by reading the bin
-    const data = await jbinRead(key, binId);
-    projects = data.projects || [];
-    _cfg = { key, binId };
-    localStorage.setItem(LS_SETUP, JSON.stringify({ key, binId }));
-    localStorage.setItem(LS_KEY, JSON.stringify(projects));
-    document.getElementById('setupOverlay').classList.add('hidden');
-    showSyncBar();
-    render();
-    toast('✅ Connecté à JSONBin !', 'success');
+    _auth.onAuthStateChanged(user => {
+      if (user) {
+        _user = user;
+        document.getElementById('setupOverlay').classList.add('hidden');
+        showSyncBar();
+        loadFromFirebase();
+      } else {
+        _user = null;
+        showScreen('screenAuth');
+      }
+    });
   } catch(e) {
-    showSetupError(_setupMode === 'existing'
-      ? 'Clé ou Bin ID incorrect. Vérifie les valeurs copiées depuis le PC.'
-      : 'Clé invalide ou erreur réseau. Vérifie ta Master Key.');
     console.error(e);
-  } finally { btn.disabled = false; btn.textContent = 'Connecter →'; }
+    showSetupError('Config Firebase invalide. Vérifie le JSON collé.', 'setupError');
+  }
 }
 
-function showSetupError(msg) {
-  const el = document.getElementById('setupError');
-  el.textContent = msg; el.style.display = 'block';
+// ── SCREEN 1 : Config ─────────────────────────────────────────────────────────
+function doFbConfig() {
+  let raw = document.getElementById('fbConfigInput').value.trim();
+  if (!raw) { showSetupError('Colle la config Firebase ci-dessus.', 'setupError'); return; }
+  // Accepte le format JS (const firebaseConfig = {...}) et les clés sans guillemets
+  raw = raw.replace(/^(?:const|let|var)\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '').trim();
+  raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+  let config;
+  try {
+    config = JSON.parse(raw);
+    if (!config.apiKey || !config.databaseURL) throw new Error('champs manquants');
+  } catch(e) {
+    showSetupError('Config invalide — ' + e.message + '. Copie le bloc { apiKey: "…", … } depuis Firebase Console.', 'setupError');
+    return;
+  }
+  localStorage.setItem(LS_FB_CONFIG, JSON.stringify(config));
+  document.getElementById('configNextBtn').disabled = true;
+  document.getElementById('configNextBtn').textContent = 'Connexion…';
+  initFirebase(config);
+  // onAuthStateChanged will transition to screenAuth automatically if not logged in
 }
 
-function resetSetup() {
-  if (!confirm('Déconnecter ce compte JSONBin ?')) return;
-  localStorage.removeItem(LS_SETUP);
-  _cfg = null;
+function goBackToConfig() {
+  showScreen('screenConfig');
+  document.getElementById('backToConfigBtn').style.display = 'none';
+}
+
+// ── SCREEN 2 : Auth ───────────────────────────────────────────────────────────
+async function doSignIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pw    = document.getElementById('authPassword').value;
+  if (!email || !pw) { showSetupError('Email et mot de passe requis.', 'setupError2'); return; }
+  const btn = document.getElementById('authSignInBtn');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try {
+    await _auth.signInWithEmailAndPassword(email, pw);
+    // onAuthStateChanged handles the rest
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':      'Compte introuvable — crée ton compte ci-dessous.',
+      'auth/wrong-password':      'Mot de passe incorrect.',
+      'auth/invalid-email':       'Adresse email invalide.',
+      'auth/invalid-credential':  'Email ou mot de passe incorrect.',
+      'auth/too-many-requests':   'Trop de tentatives. Réessaie dans quelques minutes.'
+    };
+    showSetupError(msgs[e.code] || 'Erreur : ' + e.message, 'setupError2');
+  } finally { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+}
+
+async function doSignUp() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pw    = document.getElementById('authPassword').value;
+  if (!email || !pw) { showSetupError('Email et mot de passe requis.', 'setupError2'); return; }
+  if (pw.length < 6) { showSetupError('Le mot de passe doit faire au moins 6 caractères.', 'setupError2'); return; }
+  const btn = document.getElementById('authSignUpBtn');
+  btn.disabled = true; btn.textContent = 'Création…';
+  try {
+    await _auth.createUserWithEmailAndPassword(email, pw);
+    toast('🎉 Compte créé ! Bienvenue !', 'success');
+    // onAuthStateChanged handles the rest
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Cet email est déjà utilisé — connecte-toi.',
+      'auth/weak-password':        'Mot de passe trop faible (6 caractères minimum).',
+      'auth/invalid-email':        'Adresse email invalide.'
+    };
+    showSetupError(msgs[e.code] || 'Erreur : ' + e.message, 'setupError2');
+  } finally { btn.disabled = false; btn.textContent = 'Créer mon compte'; }
+}
+
+async function doSignOut() {
+  if (!confirm('Se déconnecter ?')) return;
+  await _auth.signOut();
+  _user = null;
   document.getElementById('syncBar').style.display = 'none';
-  document.getElementById('setupKey').value = '';
-  document.getElementById('setupKeyExisting').value = '';
-  document.getElementById('setupBinId').value = '';
-  switchSetupTab('new');
-  document.getElementById('setupOverlay').classList.remove('hidden');
+  projects = [];
+  render();
+  showScreen('screenAuth');
 }
 
+// ── SCREEN NAVIGATION ─────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.getElementById('screenConfig').style.display = 'none';
+  document.getElementById('screenAuth').style.display   = 'none';
+  document.getElementById('setupError').style.display   = 'none';
+  document.getElementById('setupError2').style.display  = 'none';
+  document.getElementById(id).style.display = 'block';
+  document.getElementById('setupOverlay').classList.remove('hidden');
+  // Show back button on auth screen if config was already stored
+  if (id === 'screenAuth') {
+    document.getElementById('backToConfigBtn').style.display =
+      localStorage.getItem(LS_FB_CONFIG) ? 'none' : 'flex';
+    // Reset btn states
+    document.getElementById('configNextBtn').disabled = false;
+    document.getElementById('configNextBtn').textContent = 'Suivant →';
+  }
+}
+
+function showSetupError(msg, elId) {
+  const el = document.getElementById(elId);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── SYNC BAR ──────────────────────────────────────────────────────────────────
 function showSyncBar() {
   document.getElementById('syncBar').style.display = 'flex';
-  document.getElementById('syncBinId').textContent = _cfg.binId;
-  setSyncStatus('ok', 'Synchronisé');
+  document.getElementById('syncUserEmail').textContent = _user?.email || '';
+  setSyncStatus('ok', 'Synchronisé · ');
 }
 
-function copyBinId() {
-  if (!_cfg) return;
-  navigator.clipboard.writeText(_cfg.binId).then(() => {
-    const hint = document.getElementById('copyHint');
-    hint.style.display = 'inline';
-    setTimeout(() => hint.style.display = 'none', 2000);
-  });
-}
-
-// ── SYNC STATUS ───────────────────────────────────────────────────────────────
 function setSyncStatus(state, msg) {
-  const dot = document.getElementById('syncDot');
-  const lbl = document.getElementById('syncLabel');
-  dot.className = 'sync-dot ' + state;
-  lbl.innerHTML = `${msg} · <strong>${_cfg?.binId || ''}</strong>`;
+  document.getElementById('syncDot').className = 'sync-dot ' + state;
+  document.getElementById('syncLabel').innerHTML = msg + '<strong>' + (esc(_user?.email) || '') + '</strong>';
 }
 
 async function syncNow() {
-  if (!_cfg) return;
-  setSyncStatus('saving', 'Synchronisation…');
+  if (!_user || !_db) return;
+  setSyncStatus('saving', 'Synchronisation… · ');
   try {
-    const data = await jbinRead(_cfg.key, _cfg.binId);
-    projects = data.projects || [];
-    localStorage.setItem(LS_KEY, JSON.stringify(projects));
-    render();
-    setSyncStatus('ok', 'Synchronisé');
+    const snap = await _db.ref('users/' + _user.uid + '/data').once('value');
+    const data = snap.val();
+    if (data && data.projects) {
+      projects = data.projects;
+      localStorage.setItem(LS_KEY, JSON.stringify(projects));
+      render();
+    }
+    setSyncStatus('ok', 'Synchronisé · ');
     toast('↻ Données rafraîchies', 'success');
-  } catch { setSyncStatus('error', 'Erreur de synchronisation'); }
+  } catch { setSyncStatus('error', 'Erreur réseau · '); }
 }
 
 // ── SAVE ─────────────────────────────────────────────────────────────────────
 function save() {
   localStorage.setItem(LS_KEY, JSON.stringify(projects));
-  if (!_cfg) return;
+  if (!_user || !_db) return;
   clearTimeout(_saveTimer);
-  setSyncStatus('saving', 'Sauvegarde…');
+  setSyncStatus('saving', 'Sauvegarde… · ');
   _saveTimer = setTimeout(async () => {
     try {
-      await jbinWrite(_cfg.key, _cfg.binId, { version: 3, savedAt: new Date().toISOString(), projects });
-      setSyncStatus('ok', 'Synchronisé');
-    } catch { setSyncStatus('error', 'Erreur — données sauvées en local'); }
+      await _db.ref('users/' + _user.uid + '/data').set({
+        version: 3, savedAt: new Date().toISOString(), projects
+      });
+      setSyncStatus('ok', 'Synchronisé · ');
+    } catch { setSyncStatus('error', 'Erreur — données locales · '); }
   }, 600);
 }
 
 // ── LOAD ─────────────────────────────────────────────────────────────────────
-async function load() {
-  // Restore from localStorage first (instant)
-  try { const r = localStorage.getItem(LS_KEY); projects = r ? JSON.parse(r) : []; } catch { projects = []; }
-  // Restore config
+async function loadFromFirebase() {
+  if (!_user || !_db) return;
+  setSyncStatus('saving', 'Chargement… · ');
   try {
-    const raw = localStorage.getItem(LS_SETUP);
-    if (raw) {
-      _cfg = JSON.parse(raw);
-      showSyncBar();
-      // Fetch latest from cloud
-      setSyncStatus('saving', 'Chargement…');
-      const data = await jbinRead(_cfg.key, _cfg.binId);
-      projects = data.projects || projects;
+    const snap = await _db.ref('users/' + _user.uid + '/data').once('value');
+    const data = snap.val();
+    if (data && Array.isArray(data.projects)) {
+      projects = data.projects;
       localStorage.setItem(LS_KEY, JSON.stringify(projects));
-      setSyncStatus('ok', 'Synchronisé');
-      render();
-    } else {
-      document.getElementById('setupOverlay').classList.remove('hidden');
     }
-  } catch {
-    setSyncStatus('error', 'Erreur réseau — données locales affichées');
+    setSyncStatus('ok', 'Synchronisé · ');
+    render();
+  } catch(e) {
+    setSyncStatus('error', 'Erreur réseau · ');
+    console.error(e);
+  }
+}
+
+function load() {
+  // 1. Instant render from localStorage
+  try { const r = localStorage.getItem(LS_KEY); projects = r ? JSON.parse(r) : []; } catch { projects = []; }
+  render();
+  // 2. Init Firebase (if config stored) — onAuthStateChanged handles the rest
+  const raw = localStorage.getItem(LS_FB_CONFIG);
+  if (raw) {
+    try { initFirebase(JSON.parse(raw)); }
+    catch { localStorage.removeItem(LS_FB_CONFIG); showScreen('screenConfig'); }
+  } else {
+    showScreen('screenConfig');
   }
 }
 
@@ -775,11 +834,11 @@ function toast(msg,type=''){
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape') closeModal();
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('modalOverlay').classList.contains('open')) saveProject();
-  if(e.key==='Enter'&&document.activeElement===document.getElementById('setupKey')) doSetup();
+  if(e.key==='Enter'&&document.activeElement===document.getElementById('authPassword')) doSignIn();
 });
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-load().then(render);
+load();
 </script>
 </body>
 </html>
