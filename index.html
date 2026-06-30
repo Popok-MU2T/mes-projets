@@ -15,9 +15,9 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
   /* ── SETUP OVERLAY ── */
-  .setup-overlay { position: fixed; inset: 0; background: rgba(10,11,18,0.97); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .setup-overlay { position: fixed; inset: 0; background: rgba(10,11,18,0.97); z-index: 600; overflow-y: auto; padding: 20px; }
   .setup-overlay.hidden { display: none; }
-  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; max-width: 480px; width: 100%; box-shadow: 0 32px 80px rgba(0,0,0,0.6); }
+  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; max-width: 480px; width: 100%; box-shadow: 0 32px 80px rgba(0,0,0,0.6); margin: 0 auto; }
   .setup-logo { font-size: 36px; margin-bottom: 16px; }
   .setup-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
   .setup-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
