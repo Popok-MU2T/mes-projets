@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes Projets</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #222637; --border: #2e3248;
+    --accent: #7c6af7; --accent2: #a78bfa; --text: #e2e4f0; --muted: #8b90a8;
+    --green: #34d399; --yellow: #fbbf24; --red: #f87171; --blue: #60a5fa;
+    --orange: #fb923c; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── SETUP OVERLAY ── */
+  .setup-overlay { position: fixed; inset: 0; background: rgba(10,11,18,0.97); z-index: 600; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .setup-overlay.hidden { display: none; }
+  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; max-width: 460px; width: 100%; box-shadow: 0 32px 80px rgba(0,0,0,0.6); }
+  .setup-logo { font-size: 36px; margin-bottom: 16px; }
+  .setup-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .setup-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .setup-step { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .step-text a { color: var(--accent2); text-decoration: none; }
+  .step-text a:hover { text-decoration: underline; }
+  .step-text code { background: var(--surface2); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--text); }
+  .setup-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .setup-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
+  .setup-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 9px; font-size: 14px; outline: none; font-family: monospace; margin-bottom: 14px; transition: border-color 0.15s; }
+  .setup-input:focus { border-color: var(--accent); }
+  .setup-input::placeholder { color: var(--muted); font-family: inherit; }
+  .setup-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; background: var(--accent); color: #fff; cursor: pointer; transition: background 0.15s; }
+  .setup-btn:hover { background: var(--accent2); }
+  .setup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .setup-error { background: #f8717118; border: 1px solid #f8717133; color: var(--red); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 10px; display: none; }
+
+  /* ── SYNC BAR ── */
+  .sync-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 28px; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .sync-dot.ok { background: var(--green); box-shadow: 0 0 5px var(--green); }
+  .sync-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .sync-label { color: var(--muted); flex: 1; }
+  .sync-label strong { color: var(--text); }
+  .sync-actions { display: flex; gap: 8px; }
+
+  /* ── HEADER ── */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo svg { color: var(--accent); }
+  .logo h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: #ef444422; color: var(--red); border: 1px solid #ef444433; }
+  .btn-danger:hover { background: #ef444433; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ── MAIN ── */
+  main { flex: 1; padding: 28px; max-width: 1200px; width: 100%; margin: 0 auto; }
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 9px 12px 9px 36px; border-radius: 8px; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .filter-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px; flex-wrap: wrap; }
+  .filter-tab { padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.15s; border: none; background: none; }
+  .filter-tab.active { background: var(--accent); color: #fff; }
+  .filter-tab:hover:not(.active) { color: var(--text); }
+
+  /* ── STATS ── */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .stat-value { font-size: 22px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; }
+
+  /* ── GRID ── */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+  .project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .project-card[data-status="en_cours"]::before { background: var(--blue); }
+  .project-card[data-status="a_faire"]::before { background: var(--yellow); }
+  .project-card[data-status="termine"]::before { background: var(--green); }
+  .project-card[data-status="en_pause"]::before { background: var(--muted); }
+  .project-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,106,247,0.12); }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .card-title { font-size: 15px; font-weight: 700; line-height: 1.3; flex: 1; }
+  .card-badges { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; margin-left: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-en_cours { background: #60a5fa22; color: var(--blue); }
+  .badge-a_faire { background: #fbbf2422; color: var(--yellow); }
+  .badge-termine { background: #34d39922; color: var(--green); }
+  .badge-en_pause { background: #8b90a822; color: var(--muted); }
+  .badge-recurrent { background: #fb923c22; color: var(--orange); }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* planning/milestones */
+  .card-planning { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .card-planning-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .card-planning-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
+  .card-planning-pct { font-size: 11px; font-weight: 700; color: var(--accent2); }
+  .timeline-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .timeline-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; }
+  .card-dates { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .card-milestones { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+  .milestone-item { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+  .milestone-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .milestone-dot.past { background: var(--green); } .milestone-dot.today { background: var(--yellow); }
+  .milestone-dot.future { background: var(--border); border: 2px solid var(--muted); } .milestone-dot.urgent { background: var(--red); }
+  .milestone-name { flex: 1; } .milestone-date { color: var(--muted); flex-shrink: 0; }
+  .milestone-date.urgent { color: var(--red); font-weight: 600; }
+  .card-recurrent { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--orange); margin-bottom: 10px; }
+  .card-progress { margin-bottom: 12px; }
+  .progress-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .card-date { font-size: 11px; color: var(--muted); }
+  .card-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+  .project-card:hover .card-actions { opacity: 1; }
+  .overdue-label { font-size: 11px; color: var(--red); font-weight: 600; }
+  .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state svg { margin: 0 auto 16px; display: block; opacity: 0.4; }
+  .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.5); animation: slideUp 0.2s ease; }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-header { padding: 22px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-close { width: 32px; height: 32px; border-radius: 8px; background: var(--surface2); border: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+  .modal-body { padding: 20px 24px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.15s; font-family: inherit; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select option { background: var(--surface2); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-section { margin: 22px 0 16px; }
+  .form-section-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+  .toggle-label { font-size: 13px; font-weight: 500; } .toggle-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: 0.2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+  .recurrence-options { margin-top: 12px; padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; display: none; }
+  .recurrence-options.visible { display: block; }
+  .freq-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+  .freq-btn { padding: 8px 4px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .freq-btn.active { border-color: var(--accent); background: #7c6af722; color: var(--accent2); }
+  .freq-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+  .custom-freq { display: none; }
+  .custom-freq.visible { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .custom-freq input[type="number"] { width: 70px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: 13px; outline: none; }
+  .custom-freq select { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: 13px; outline: none; }
+  .next-occurrence { font-size: 12px; color: var(--muted); margin-top: 10px; padding: 8px 10px; background: var(--surface); border-radius: 7px; }
+  .next-occurrence span { color: var(--accent2); font-weight: 600; }
+  .milestones-editor { display: flex; flex-direction: column; gap: 8px; }
+  .milestone-row { display: flex; align-items: center; gap: 8px; }
+  .milestone-row input[type="date"] { width: 145px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 7px; font-size: 13px; outline: none; flex-shrink: 0; color-scheme: dark; }
+  .milestone-row input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 7px; font-size: 13px; outline: none; }
+  .milestone-row input[type="text"]::placeholder { color: var(--muted); }
+  .remove-item { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px; font-size: 16px; line-height: 1; transition: color 0.15s; }
+  .remove-item:hover { color: var(--red); }
+  .add-item-btn { background: none; border: 1px dashed var(--border); color: var(--muted); padding: 7px 12px; border-radius: 7px; cursor: pointer; font-size: 13px; text-align: left; width: 100%; transition: all 0.15s; margin-top: 2px; }
+  .add-item-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+  .checklist-editor { display: flex; flex-direction: column; gap: 8px; }
+  .checklist-item-row { display: flex; align-items: center; gap: 8px; }
+  .checklist-item-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+  .checklist-item-row input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 7px; font-size: 13px; outline: none; }
+  .checklist-item-row input[type="text"].done { text-decoration: line-through; color: var(--muted); }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
+  .toast { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.3); animation: toastIn 0.2s ease; }
+  .toast.success { border-color: var(--green); } .toast.error { border-color: var(--red); }
+  @keyframes toastIn { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+  @media (max-width: 700px) {
+    .stats { grid-template-columns: repeat(2,1fr); }
+    main { padding: 16px; }
+    header { padding: 12px 16px; }
+    .sync-bar { padding: 8px 16px; }
+    .form-row { grid-template-columns: 1fr; }
+    .freq-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SETUP OVERLAY (shown on first launch) ── -->
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-card">
+    <div class="setup-logo">🔑</div>
+    <div class="setup-title">Connexion à JSONBin</div>
+    <div class="setup-sub">Suis ces 3 étapes une seule fois pour activer la synchronisation cloud entre ton PC et ton téléphone.</div>
+
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">Va sur <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → crée un compte gratuit → dans <strong>API Keys</strong>, copie ta <strong>Master Key</strong>.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">Colle ta Master Key ci-dessous et clique <strong>Connecter</strong> — l'app crée automatiquement un espace de stockage pour toi.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">C'est tout ! Ouvre la même URL depuis ton téléphone, rentre la même clé — tes projets se synchronisent.</div>
+    </div>
+
+    <hr class="setup-divider">
+    <label class="setup-label">Master Key JSONBin</label>
+    <input type="password" class="setup-input" id="setupKey" placeholder="$2b$10$..." autocomplete="off">
+    <button class="setup-btn" id="setupBtn" onclick="doSetup()">Connecter →</button>
+    <div class="setup-error" id="setupError"></div>
+  </div>
+</div>
+
+<!-- ── SYNC BAR ── -->
+<div class="sync-bar" id="syncBar" style="display:none">
+  <div class="sync-dot ok" id="syncDot"></div>
+  <div class="sync-label" id="syncLabel">Connecté à JSONBin · <strong id="syncBinId"></strong></div>
+  <div class="sync-actions">
+    <button class="btn btn-ghost btn-sm" onclick="syncNow()" title="Rafraîchir depuis le cloud">↻ Sync</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetSetup()" title="Changer de compte">⚙</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <h1>Mes Projets</h1>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouveau projet
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Rechercher..." id="searchInput" oninput="renderProjects()">
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('tous',this)">Tous</button>
+      <button class="filter-tab" onclick="setFilter('en_cours',this)">En cours</button>
+      <button class="filter-tab" onclick="setFilter('a_faire',this)">À faire</button>
+      <button class="filter-tab" onclick="setFilter('en_pause',this)">En pause</button>
+      <button class="filter-tab" onclick="setFilter('termine',this)">Terminés</button>
+      <button class="filter-tab" onclick="setFilter('recurrent',this)">↻ Récurrents</button>
+    </div>
+  </div>
+  <div class="projects-grid" id="projectsGrid"></div>
+</main>
+
+<!-- ── PROJECT MODAL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nouveau projet</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom *</label>
+        <input type="text" class="form-input" id="fieldName" placeholder="Mon projet..." maxlength="80">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="fieldDesc" placeholder="De quoi s'agit-il ?"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Statut</label>
+        <select class="form-select" id="fieldStatus">
+          <option value="a_faire">📋 À faire</option>
+          <option value="en_cours" selected>🔵 En cours</option>
+          <option value="en_pause">⏸ En pause</option>
+          <option value="termine">✅ Terminé</option>
+        </select>
+      </div>
+      <div class="form-section"><div class="form-section-title">↻ Récurrence</div></div>
+      <div class="form-group">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Projet récurrent</div><div class="toggle-sub">Se répète selon une fréquence définie</div></div>
+          <label class="toggle"><input type="checkbox" id="fieldRecurrent" onchange="toggleRecurrence()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="recurrence-options" id="recurrenceOptions">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Fréquence</div>
+          <div class="freq-grid">
+            <button class="freq-btn active" data-freq="quotidien" onclick="selectFreq('quotidien',this)">Quotidien</button>
+            <button class="freq-btn" data-freq="hebdomadaire" onclick="selectFreq('hebdomadaire',this)">Hebdomadaire</button>
+            <button class="freq-btn" data-freq="mensuel" onclick="selectFreq('mensuel',this)">Mensuel</button>
+            <button class="freq-btn" data-freq="trimestriel" onclick="selectFreq('trimestriel',this)">Trimestriel</button>
+            <button class="freq-btn" data-freq="annuel" onclick="selectFreq('annuel',this)">Annuel</button>
+            <button class="freq-btn" data-freq="personnalise" onclick="selectFreq('personnalise',this)">Personnalisé</button>
+          </div>
+          <div class="custom-freq" id="customFreqRow">
+            <span style="font-size:13px;color:var(--muted)">Tous les</span>
+            <input type="number" id="customFreqNum" min="1" max="365" value="2" oninput="updateNextOcc()">
+            <select id="customFreqUnit" onchange="updateNextOcc()">
+              <option value="jours">jours</option><option value="semaines">semaines</option><option value="mois">mois</option>
+            </select>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <div><label class="form-label" style="margin-bottom:5px">Début</label><input type="date" class="form-input" id="fieldRecurStart" oninput="updateNextOcc()" style="color-scheme:dark"></div>
+            <div><label class="form-label" style="margin-bottom:5px">Fin</label><input type="date" class="form-input" id="fieldRecurEnd" style="color-scheme:dark"></div>
+          </div>
+          <div class="next-occurrence">📅 Prochaine occurrence : <span id="nextOccDate">—</span></div>
+        </div>
+      </div>
+      <div class="form-section"><div class="form-section-title">📅 Planning</div></div>
+      <div class="form-row form-group">
+        <div><label class="form-label">Début</label><input type="date" class="form-input" id="fieldStartDate" style="color-scheme:dark"></div>
+        <div><label class="form-label">Fin</label><input type="date" class="form-input" id="fieldEndDate" style="color-scheme:dark"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jalons</label>
+        <div class="milestones-editor" id="milestonesEditor"></div>
+        <button class="add-item-btn" onclick="addMilestone()">+ Ajouter un jalon</button>
+      </div>
+      <div class="form-section"><div class="form-section-title">✅ Tâches</div></div>
+      <div class="form-group">
+        <div class="checklist-editor" id="checklistEditor"></div>
+        <button class="add-item-btn" onclick="addTask()">+ Ajouter une tâche</button>
+      </div>
+      <div class="form-section"><div class="form-section-title">📝 Notes</div></div>
+      <div class="form-group">
+        <textarea class="form-textarea" id="fieldNotes" placeholder="Idées, liens, rappels..." rows="4"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div><button class="btn btn-danger btn-sm" id="deleteBtn" onclick="deleteProject()" style="display:none">Supprimer</button></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-primary" onclick="saveProject()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const LS_KEY   = 'mes_projets_v3';
+const LS_SETUP = 'jsonbin_setup';
+const JBIN     = 'https://api.jsonbin.io/v3';
+
+let projects = [];
+let currentFilter = 'tous';
+let editingId = null;
+let currentFreq = 'hebdomadaire';
+let _saveTimer = null;
+let _cfg = null; // { key, binId }
+
+// ── JSONBIN API ───────────────────────────────────────────────────────────────
+async function jbinCreate(key) {
+  const r = await fetch(`${JBIN}/b`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'mes-projets' },
+    body: JSON.stringify({ version: 3, projects: [] })
+  });
+  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
+  const d = await r.json();
+  return d.metadata.id;
+}
+
+async function jbinRead(key, binId) {
+  const r = await fetch(`${JBIN}/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': key }
+  });
+  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
+  const d = await r.json();
+  return d.record;
+}
+
+async function jbinWrite(key, binId, data) {
+  const r = await fetch(`${JBIN}/b/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(`JSONBin: ${r.status}`);
+}
+
+// ── SETUP ────────────────────────────────────────────────────────────────────
+async function doSetup() {
+  const key = document.getElementById('setupKey').value.trim();
+  const errEl = document.getElementById('setupError');
+  const btn = document.getElementById('setupBtn');
+  errEl.style.display = 'none';
+  if (!key) { showSetupError('Entre ta Master Key JSONBin.'); return; }
+  btn.disabled = true; btn.textContent = 'Connexion en cours…';
+  try {
+    // Check if a binId already exists in localStorage (switching device case)
+    let binId = localStorage.getItem('jsonbin_binid');
+    if (!binId) {
+      // First time — create a new bin
+      binId = await jbinCreate(key);
+      localStorage.setItem('jsonbin_binid', binId);
+    }
+    // Try to read the bin to verify key works
+    const data = await jbinRead(key, binId);
+    projects = data.projects || [];
+    _cfg = { key, binId };
+    localStorage.setItem(LS_SETUP, JSON.stringify({ key, binId }));
+    localStorage.setItem(LS_KEY, JSON.stringify(projects));
+    document.getElementById('setupOverlay').classList.add('hidden');
+    showSyncBar();
+    render();
+    toast('✅ Connecté à JSONBin !', 'success');
+  } catch(e) {
+    showSetupError('Clé invalide ou erreur réseau. Vérifie ta Master Key.');
+    console.error(e);
+  } finally { btn.disabled = false; btn.textContent = 'Connecter →'; }
+}
+
+function showSetupError(msg) {
+  const el = document.getElementById('setupError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function resetSetup() {
+  if (!confirm('Déconnecter ce compte JSONBin ?')) return;
+  localStorage.removeItem(LS_SETUP);
+  localStorage.removeItem('jsonbin_binid');
+  _cfg = null;
+  document.getElementById('syncBar').style.display = 'none';
+  document.getElementById('setupKey').value = '';
+  document.getElementById('setupOverlay').classList.remove('hidden');
+}
+
+function showSyncBar() {
+  const bar = document.getElementById('syncBar');
+  bar.style.display = 'flex';
+  document.getElementById('syncBinId').textContent = _cfg.binId;
+  setSyncStatus('ok', 'Synchronisé');
+}
+
+// ── SYNC STATUS ───────────────────────────────────────────────────────────────
+function setSyncStatus(state, msg) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + state;
+  lbl.innerHTML = `${msg} · <strong>${_cfg?.binId || ''}</strong>`;
+}
+
+async function syncNow() {
+  if (!_cfg) return;
+  setSyncStatus('saving', 'Synchronisation…');
+  try {
+    const data = await jbinRead(_cfg.key, _cfg.binId);
+    projects = data.projects || [];
+    localStorage.setItem(LS_KEY, JSON.stringify(projects));
+    render();
+    setSyncStatus('ok', 'Synchronisé');
+    toast('↻ Données rafraîchies', 'success');
+  } catch { setSyncStatus('error', 'Erreur de synchronisation'); }
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem(LS_KEY, JSON.stringify(projects));
+  if (!_cfg) return;
+  clearTimeout(_saveTimer);
+  setSyncStatus('saving', 'Sauvegarde…');
+  _saveTimer = setTimeout(async () => {
+    try {
+      await jbinWrite(_cfg.key, _cfg.binId, { version: 3, savedAt: new Date().toISOString(), projects });
+      setSyncStatus('ok', 'Synchronisé');
+    } catch { setSyncStatus('error', 'Erreur — données sauvées en local'); }
+  }, 600);
+}
+
+// ── LOAD ─────────────────────────────────────────────────────────────────────
+async function load() {
+  // Restore from localStorage first (instant)
+  try { const r = localStorage.getItem(LS_KEY); projects = r ? JSON.parse(r) : []; } catch { projects = []; }
+  // Restore config
+  try {
+    const raw = localStorage.getItem(LS_SETUP);
+    if (raw) {
+      _cfg = JSON.parse(raw);
+      showSyncBar();
+      // Fetch latest from cloud
+      setSyncStatus('saving', 'Chargement…');
+      const data = await jbinRead(_cfg.key, _cfg.binId);
+      projects = data.projects || projects;
+      localStorage.setItem(LS_KEY, JSON.stringify(projects));
+      setSyncStatus('ok', 'Synchronisé');
+      render();
+    } else {
+      document.getElementById('setupOverlay').classList.remove('hidden');
+    }
+  } catch {
+    setSyncStatus('error', 'Erreur réseau — données locales affichées');
+  }
+}
+
+// ── DATE HELPERS ──────────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0,10); }
+function parseDate(s) { if (!s) return null; const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
+function fmtDate(s) { if (!s) return ''; return parseDate(s).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); }
+function fmtDateFull(s) { if (!s) return ''; return parseDate(s).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}); }
+function daysUntil(s) {
+  if (!s) return null;
+  const n=new Date(); n.setHours(0,0,0,0);
+  const d=parseDate(s); d.setHours(0,0,0,0);
+  return Math.round((d-n)/86400000);
+}
+function calcNextOcc(freq, num, unit, start) {
+  let d = start||today(); const now=today(); let i=0;
+  while (d<=now && i++<1000) {
+    const nd=parseDate(d);
+    if (freq==='quotidien') nd.setDate(nd.getDate()+1);
+    else if (freq==='hebdomadaire') nd.setDate(nd.getDate()+7);
+    else if (freq==='mensuel') nd.setMonth(nd.getMonth()+1);
+    else if (freq==='trimestriel') nd.setMonth(nd.getMonth()+3);
+    else if (freq==='annuel') nd.setFullYear(nd.getFullYear()+1);
+    else { const n=parseInt(num)||1; if(unit==='jours') nd.setDate(nd.getDate()+n); else if(unit==='semaines') nd.setDate(nd.getDate()+n*7); else nd.setMonth(nd.getMonth()+n); }
+    d=nd.toISOString().slice(0,10);
+  }
+  return d;
+}
+
+// ── RECURRENCE UI ─────────────────────────────────────────────────────────────
+function toggleRecurrence() {
+  const on = document.getElementById('fieldRecurrent').checked;
+  document.getElementById('recurrenceOptions').classList.toggle('visible', on);
+  if (on && !document.getElementById('fieldRecurStart').value) document.getElementById('fieldRecurStart').value = today();
+  updateNextOcc();
+}
+function selectFreq(freq, btn) {
+  currentFreq = freq;
+  document.querySelectorAll('.freq-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  document.getElementById('customFreqRow').classList.toggle('visible', freq==='personnalise');
+  updateNextOcc();
+}
+function updateNextOcc() {
+  const next = calcNextOcc(currentFreq, document.getElementById('customFreqNum').value, document.getElementById('customFreqUnit').value, document.getElementById('fieldRecurStart').value);
+  document.getElementById('nextOccDate').textContent = fmtDateFull(next);
+}
+
+// ── MILESTONES ────────────────────────────────────────────────────────────────
+function addMilestone(date='', name='') {
+  const ed=document.getElementById('milestonesEditor');
+  const row=document.createElement('div'); row.className='milestone-row';
+  row.innerHTML=`<input type="date" value="${date}" style="color-scheme:dark"><input type="text" value="${esc(name)}" placeholder="Nom du jalon..."><button class="remove-item" onclick="this.parentElement.remove()">×</button>`;
+  ed.appendChild(row); if (!name) row.querySelector('input[type="text"]').focus();
+}
+function getMilestones() {
+  return [...document.querySelectorAll('#milestonesEditor .milestone-row')].map(r=>({date:r.querySelector('input[type="date"]').value,name:r.querySelector('input[type="text"]').value.trim()})).filter(m=>m.name);
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+function addTask(text='', done=false) {
+  const ed=document.getElementById('checklistEditor');
+  const row=document.createElement('div'); row.className='checklist-item-row';
+  row.innerHTML=`<input type="checkbox" ${done?'checked':''} onchange="this.nextElementSibling.classList.toggle('done',this.checked)"><input type="text" value="${esc(text)}" class="${done?'done':''}" placeholder="Nouvelle tâche..."><button class="remove-item" onclick="this.parentElement.remove()">×</button>`;
+  ed.appendChild(row); if (!text) row.querySelector('input[type="text"]').focus();
+}
+function getChecklist() {
+  return [...document.querySelectorAll('#checklistEditor .checklist-item-row')].map(r=>({text:r.querySelector('input[type="text"]').value.trim(),done:r.querySelector('input[type="checkbox"]').checked})).filter(t=>t.text);
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(id=null) {
+  editingId=id;
+  document.getElementById('checklistEditor').innerHTML=''; document.getElementById('milestonesEditor').innerHTML='';
+  currentFreq='hebdomadaire'; document.querySelectorAll('.freq-btn').forEach(b=>b.classList.toggle('active',b.dataset.freq===currentFreq));
+  if (id) {
+    const p=projects.find(x=>x.id===id); if (!p) return;
+    document.getElementById('modalTitle').textContent='Modifier le projet';
+    document.getElementById('fieldName').value=p.name;
+    document.getElementById('fieldDesc').value=p.desc||'';
+    document.getElementById('fieldStatus').value=p.status;
+    document.getElementById('fieldNotes').value=p.notes||'';
+    document.getElementById('fieldStartDate').value=p.startDate||'';
+    document.getElementById('fieldEndDate').value=p.endDate||'';
+    (p.tasks||[]).forEach(t=>addTask(t.text,t.done));
+    (p.milestones||[]).forEach(m=>addMilestone(m.date,m.name));
+    const r=p.recurrence||{};
+    document.getElementById('fieldRecurrent').checked=!!p.isRecurrent;
+    if (p.isRecurrent&&r.freq) { currentFreq=r.freq; document.querySelectorAll('.freq-btn').forEach(b=>b.classList.toggle('active',b.dataset.freq===currentFreq)); }
+    document.getElementById('fieldRecurStart').value=r.startDate||'';
+    document.getElementById('fieldRecurEnd').value=r.endDate||'';
+    document.getElementById('customFreqNum').value=r.customNum||2;
+    document.getElementById('customFreqUnit').value=r.customUnit||'jours';
+    document.getElementById('customFreqRow').classList.toggle('visible',currentFreq==='personnalise');
+    document.getElementById('recurrenceOptions').classList.toggle('visible',!!p.isRecurrent);
+    document.getElementById('deleteBtn').style.display='inline-flex';
+  } else {
+    document.getElementById('modalTitle').textContent='Nouveau projet';
+    ['fieldName','fieldDesc','fieldNotes','fieldStartDate','fieldEndDate','fieldRecurStart','fieldRecurEnd'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('fieldStatus').value='en_cours';
+    document.getElementById('fieldRecurrent').checked=false;
+    document.getElementById('recurrenceOptions').classList.remove('visible');
+    document.getElementById('customFreqRow').classList.remove('visible');
+    document.getElementById('deleteBtn').style.display='none';
+  }
+  updateNextOcc();
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fieldName').focus(),50);
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editingId=null; }
+function handleOverlayClick(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+// ── CRUD ──────────────────────────────────────────────────────────────────────
+function genId() { return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function saveProject() {
+  const name=document.getElementById('fieldName').value.trim();
+  if (!name) { toast('⚠️ Le nom est requis.','error'); return; }
+  const isRec=document.getElementById('fieldRecurrent').checked;
+  const num=document.getElementById('customFreqNum').value, unit=document.getElementById('customFreqUnit').value, rs=document.getElementById('fieldRecurStart').value;
+  const data={name,desc:document.getElementById('fieldDesc').value.trim(),status:document.getElementById('fieldStatus').value,notes:document.getElementById('fieldNotes').value.trim(),tasks:getChecklist(),milestones:getMilestones(),startDate:document.getElementById('fieldStartDate').value,endDate:document.getElementById('fieldEndDate').value,isRecurrent:isRec,recurrence:isRec?{freq:currentFreq,customNum:parseInt(num)||1,customUnit:unit,startDate:rs,endDate:document.getElementById('fieldRecurEnd').value,nextOccurrence:calcNextOcc(currentFreq,num,unit,rs)}:null,updatedAt:Date.now()};
+  if (editingId) {
+    const i=projects.findIndex(p=>p.id===editingId); if(i>=0) projects[i]={...projects[i],...data};
+    toast('✅ Projet mis à jour !','success');
+  } else {
+    projects.unshift({id:genId(),createdAt:Date.now(),...data});
+    toast('🎉 Projet créé !','success');
+  }
+  save(); render(); closeModal();
+}
+function deleteProject() {
+  if (!editingId||!confirm('Supprimer ce projet ?')) return;
+  projects=projects.filter(p=>p.id!==editingId);
+  save(); render(); closeModal(); toast('🗑️ Supprimé.','');
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+const SL={en_cours:'🔵 En cours',a_faire:'📋 À faire',en_pause:'⏸ En pause',termine:'✅ Terminé'};
+const FL={quotidien:'Quotidien',hebdomadaire:'Hebdomadaire',mensuel:'Mensuel',trimestriel:'Trimestriel',annuel:'Annuel',personnalise:'Personnalisé'};
+
+function renderStats() {
+  let rec=0,late=0; const c={tous:projects.length,en_cours:0,a_faire:0,en_pause:0,termine:0};
+  projects.forEach(p=>{c[p.status]++;if(p.isRecurrent)rec++;if(p.endDate&&p.status!=='termine'&&daysUntil(p.endDate)<0)late++;});
+  const s=(i,bg,v,l)=>`<div class="stat-card"><div class="stat-icon" style="background:${bg}20">${i}</div><div><div class="stat-value">${v}</div><div class="stat-label">${l}</div></div></div>`;
+  document.getElementById('stats').innerHTML=s('📁','#7c6af7',c.tous,'Total')+s('🔵','#60a5fa',c.en_cours,'En cours')+s('📋','#fbbf24',c.a_faire,'À faire')+s('↻','#fb923c',rec,'Récurrents')+s('⚠️','#f87171',late,'En retard');
+}
+
+function mChip(m) {
+  const d=daysUntil(m.date); let cls='future',dc='';
+  if(d===null)cls='future'; else if(d<0)cls='past'; else if(d===0)cls='today'; else if(d<=3){cls='urgent';dc='urgent';}
+  const lbl=d===null?'':d<0?`il y a ${-d}j`:d===0?"Aujourd'hui":`dans ${d}j`;
+  return `<div class="milestone-item"><div class="milestone-dot ${cls}"></div><span class="milestone-name">${esc(m.name)}</span><span class="milestone-date ${dc}">${m.date?fmtDate(m.date)+(lbl?' · '+lbl:''):''}</span></div>`;
+}
+
+function renderProjects() {
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const list=projects.filter(p=>{
+    if(currentFilter==='recurrent') return p.isRecurrent;
+    return (currentFilter==='tous'||p.status===currentFilter)&&(!q||p.name.toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q));
+  }).sort((a,b)=>b.createdAt-a.createdAt);
+  const grid=document.getElementById('projectsGrid');
+  if (!list.length) { grid.innerHTML=`<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><h3>${q?'Aucun résultat':'Aucun projet ici'}</h3><p>${q?'Essaie un autre terme.':'Clique sur "Nouveau projet" pour commencer.'}</p></div>`; return; }
+  grid.innerHTML=list.map(p=>{
+    const t=p.tasks||[], done=t.filter(x=>x.done).length, pct=t.length?Math.round(done/t.length*100):-1;
+    const cr=new Date(p.createdAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+    const ms=p.milestones||[];
+    let pb=''; const hp=p.startDate||p.endDate;
+    if (hp) {
+      const dE=daysUntil(p.endDate),isL=p.endDate&&dE<0&&p.status!=='termine'; let tP=0;
+      if(p.startDate&&p.endDate){const s=parseDate(p.startDate).getTime(),e=parseDate(p.endDate).getTime(),n=Date.now();tP=Math.max(0,Math.min(100,Math.round((n-s)/(e-s)*100)));}
+      const mH=ms.length?`<div class="card-milestones">${ms.slice(0,3).map(mChip).join('')}${ms.length>3?`<div style="font-size:11px;color:var(--muted);padding-left:14px">+${ms.length-3} jalons</div>`:''}</div>`:'';
+      pb=`<div class="card-planning"><div class="card-planning-header"><div class="card-planning-title">📅 Planning${isL?` <span class="overdue-label">⚠ En retard</span>`:''}</div>${p.startDate&&p.endDate?`<div class="card-planning-pct">${tP}%</div>`:''}</div>${p.startDate&&p.endDate?`<div class="timeline-bar"><div class="timeline-fill" style="width:${tP}%"></div></div>`:''}<div class="card-dates"><span>${p.startDate?'▶ '+fmtDate(p.startDate):''}</span><span>${p.endDate?(dE!==null&&dE>=0&&dE<=7&&p.status!=='termine'?`<span style="color:var(--yellow)">⏰ ${fmtDate(p.endDate)}</span>`:'⏹ '+fmtDate(p.endDate)):''}</span></div>${mH}</div>`;
+    } else if(ms.length) { pb=`<div class="card-planning"><div class="card-planning-header"><div class="card-planning-title">📅 Jalons</div></div><div class="card-milestones">${ms.slice(0,3).map(mChip).join('')}${ms.length>3?`<div style="font-size:11px;color:var(--muted);padding-left:14px">+${ms.length-3} jalons</div>`:''}</div></div>`; }
+    const rb=p.isRecurrent?`<div class="card-recurrent">↻ ${FL[p.recurrence?.freq]||'Récurrent'}${p.recurrence?.nextOccurrence?' · Prochain : '+fmtDate(p.recurrence.nextOccurrence):''}</div>`:'';
+    return `<div class="project-card" data-status="${p.status}" onclick="openModal('${p.id}')">
+      <div class="card-header"><div class="card-title">${esc(p.name)}</div><div class="card-badges"><span class="badge badge-${p.status}">${SL[p.status]}</span>${p.isRecurrent?'<span class="badge badge-recurrent">↻</span>':''}</div></div>
+      ${p.desc?`<div class="card-desc">${esc(p.desc)}</div>`:''}${rb}${pb}
+      ${pct>=0?`<div class="card-progress"><div class="progress-info"><span>Tâches</span><span>${done}/${t.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`:''}
+      <div class="card-footer"><span class="card-date">Créé le ${cr}</span><div class="card-actions" onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="openModal('${p.id}')">Modifier</button></div></div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function render(){renderStats();renderProjects();}
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderProjects();}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg,type=''){
+  const c=document.getElementById('toastContainer');
+  const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;c.appendChild(el);
+  setTimeout(()=>{el.style.cssText='opacity:0;transform:translateX(20px);transition:.3s';setTimeout(()=>el.remove(),300);},3000);
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('modalOverlay').classList.contains('open')) saveProject();
+  if(e.key==='Enter'&&document.activeElement===document.getElementById('setupKey')) doSetup();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+load().then(render);
+</script>
+</body>
+</html>
