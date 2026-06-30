@@ -28,10 +28,15 @@
   .step-text a:hover { text-decoration: underline; }
   .step-text code { background: var(--surface2); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--text); }
   .setup-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .setup-tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 3px; margin-bottom: 18px; }
+  .setup-tab { flex: 1; padding: 8px; border-radius: 7px; border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .setup-tab.active { background: var(--surface2); color: var(--text); }
   .setup-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
   .setup-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 9px; font-size: 14px; outline: none; font-family: monospace; margin-bottom: 14px; transition: border-color 0.15s; }
   .setup-input:focus { border-color: var(--accent); }
   .setup-input::placeholder { color: var(--muted); font-family: inherit; }
+  .setup-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; margin-top: -10px; line-height: 1.5; }
+  .setup-hint strong { color: var(--accent2); }
   .setup-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; background: var(--accent); color: #fff; cursor: pointer; transition: background 0.15s; }
   .setup-btn:hover { background: var(--accent2); }
   .setup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -214,24 +219,50 @@
   <div class="setup-card">
     <div class="setup-logo">🔑</div>
     <div class="setup-title">Connexion à JSONBin</div>
-    <div class="setup-sub">Suis ces 3 étapes une seule fois pour activer la synchronisation cloud entre ton PC et ton téléphone.</div>
+    <div class="setup-sub">Choisis selon ta situation :</div>
 
-    <div class="setup-step">
-      <div class="step-num">1</div>
-      <div class="step-text">Va sur <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → crée un compte gratuit → dans <strong>API Keys</strong>, copie ta <strong>Master Key</strong>.</div>
-    </div>
-    <div class="setup-step">
-      <div class="step-num">2</div>
-      <div class="step-text">Colle ta Master Key ci-dessous et clique <strong>Connecter</strong> — l'app crée automatiquement un espace de stockage pour toi.</div>
-    </div>
-    <div class="setup-step">
-      <div class="step-num">3</div>
-      <div class="step-text">C'est tout ! Ouvre la même URL depuis ton téléphone, rentre la même clé — tes projets se synchronisent.</div>
+    <div class="setup-tabs">
+      <button class="setup-tab active" id="tabNew" onclick="switchSetupTab('new')">🖥 Premier appareil</button>
+      <button class="setup-tab" id="tabExisting" onclick="switchSetupTab('existing')">📱 Appareil supplémentaire</button>
     </div>
 
-    <hr class="setup-divider">
-    <label class="setup-label">Master Key JSONBin</label>
-    <input type="password" class="setup-input" id="setupKey" placeholder="$2b$10$..." autocomplete="off">
+    <!-- Mode : premier appareil -->
+    <div id="modeNew">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Va sur <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → crée un compte gratuit → <strong>API Keys</strong> → copie ta <strong>Master Key</strong>.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Colle-la ci-dessous → <strong>Connecter</strong>. L'app crée ton espace cloud automatiquement.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Note le <strong>Bin ID</strong> affiché en haut de l'app — tu en auras besoin sur le téléphone.</div>
+      </div>
+      <hr class="setup-divider">
+      <label class="setup-label">Master Key JSONBin</label>
+      <input type="password" class="setup-input" id="setupKey" placeholder="$2b$10$..." autocomplete="off">
+    </div>
+
+    <!-- Mode : appareil supplémentaire -->
+    <div id="modeExisting" style="display:none">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Sur ton <strong>PC</strong>, regarde en haut de l'app — le <strong>Bin ID</strong> est affiché dans la barre verte. Copie-le.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Entre ta <strong>Master Key</strong> et le <strong>Bin ID</strong> ci-dessous pour te connecter au même espace.</div>
+      </div>
+      <hr class="setup-divider">
+      <label class="setup-label">Master Key JSONBin</label>
+      <input type="password" class="setup-input" id="setupKeyExisting" placeholder="$2b$10$..." autocomplete="off">
+      <label class="setup-label">Bin ID</label>
+      <input type="text" class="setup-input" id="setupBinId" placeholder="64abc123..." autocomplete="off" style="font-size:13px">
+      <p class="setup-hint">Le Bin ID ressemble à <strong>64abc123def456...</strong> — visible dans la barre de sync sur le PC.</p>
+    </div>
+
     <button class="setup-btn" id="setupBtn" onclick="doSetup()">Connecter →</button>
     <div class="setup-error" id="setupError"></div>
   </div>
@@ -240,9 +271,9 @@
 <!-- ── SYNC BAR ── -->
 <div class="sync-bar" id="syncBar" style="display:none">
   <div class="sync-dot ok" id="syncDot"></div>
-  <div class="sync-label" id="syncLabel">Connecté à JSONBin · <strong id="syncBinId"></strong></div>
+  <div class="sync-label" id="syncLabel">Synchronisé · Bin ID : <strong id="syncBinId" style="cursor:pointer;color:var(--accent2)" onclick="copyBinId()" title="Cliquer pour copier">—</strong> <span id="copyHint" style="font-size:11px;color:var(--green);display:none">✓ copié</span></div>
   <div class="sync-actions">
-    <button class="btn btn-ghost btn-sm" onclick="syncNow()" title="Rafraîchir depuis le cloud">↻ Sync</button>
+    <button class="btn btn-ghost btn-sm" onclick="syncNow()">↻ Sync</button>
     <button class="btn btn-ghost btn-sm" onclick="resetSetup()" title="Changer de compte">⚙</button>
   </div>
 </div>
@@ -410,22 +441,38 @@ async function jbinWrite(key, binId, data) {
 }
 
 // ── SETUP ────────────────────────────────────────────────────────────────────
+let _setupMode = 'new';
+function switchSetupTab(mode) {
+  _setupMode = mode;
+  document.getElementById('modeNew').style.display = mode === 'new' ? 'block' : 'none';
+  document.getElementById('modeExisting').style.display = mode === 'existing' ? 'block' : 'none';
+  document.getElementById('tabNew').classList.toggle('active', mode === 'new');
+  document.getElementById('tabExisting').classList.toggle('active', mode === 'existing');
+  document.getElementById('setupError').style.display = 'none';
+}
+
 async function doSetup() {
-  const key = document.getElementById('setupKey').value.trim();
   const errEl = document.getElementById('setupError');
   const btn = document.getElementById('setupBtn');
   errEl.style.display = 'none';
-  if (!key) { showSetupError('Entre ta Master Key JSONBin.'); return; }
   btn.disabled = true; btn.textContent = 'Connexion en cours…';
+
   try {
-    // Check if a binId already exists in localStorage (switching device case)
-    let binId = localStorage.getItem('jsonbin_binid');
-    if (!binId) {
-      // First time — create a new bin
+    let key, binId;
+
+    if (_setupMode === 'new') {
+      key = document.getElementById('setupKey').value.trim();
+      if (!key) { showSetupError('Entre ta Master Key JSONBin.'); return; }
+      // Create a new bin
       binId = await jbinCreate(key);
-      localStorage.setItem('jsonbin_binid', binId);
+    } else {
+      key = document.getElementById('setupKeyExisting').value.trim();
+      binId = document.getElementById('setupBinId').value.trim();
+      if (!key) { showSetupError('Entre ta Master Key.'); return; }
+      if (!binId) { showSetupError('Entre le Bin ID affiché sur ton autre appareil.'); return; }
     }
-    // Try to read the bin to verify key works
+
+    // Verify by reading the bin
     const data = await jbinRead(key, binId);
     projects = data.projects || [];
     _cfg = { key, binId };
@@ -436,7 +483,9 @@ async function doSetup() {
     render();
     toast('✅ Connecté à JSONBin !', 'success');
   } catch(e) {
-    showSetupError('Clé invalide ou erreur réseau. Vérifie ta Master Key.');
+    showSetupError(_setupMode === 'existing'
+      ? 'Clé ou Bin ID incorrect. Vérifie les valeurs copiées depuis le PC.'
+      : 'Clé invalide ou erreur réseau. Vérifie ta Master Key.');
     console.error(e);
   } finally { btn.disabled = false; btn.textContent = 'Connecter →'; }
 }
@@ -449,18 +498,28 @@ function showSetupError(msg) {
 function resetSetup() {
   if (!confirm('Déconnecter ce compte JSONBin ?')) return;
   localStorage.removeItem(LS_SETUP);
-  localStorage.removeItem('jsonbin_binid');
   _cfg = null;
   document.getElementById('syncBar').style.display = 'none';
   document.getElementById('setupKey').value = '';
+  document.getElementById('setupKeyExisting').value = '';
+  document.getElementById('setupBinId').value = '';
+  switchSetupTab('new');
   document.getElementById('setupOverlay').classList.remove('hidden');
 }
 
 function showSyncBar() {
-  const bar = document.getElementById('syncBar');
-  bar.style.display = 'flex';
+  document.getElementById('syncBar').style.display = 'flex';
   document.getElementById('syncBinId').textContent = _cfg.binId;
   setSyncStatus('ok', 'Synchronisé');
+}
+
+function copyBinId() {
+  if (!_cfg) return;
+  navigator.clipboard.writeText(_cfg.binId).then(() => {
+    const hint = document.getElementById('copyHint');
+    hint.style.display = 'inline';
+    setTimeout(() => hint.style.display = 'none', 2000);
+  });
 }
 
 // ── SYNC STATUS ───────────────────────────────────────────────────────────────
