@@ -131,6 +131,7 @@ main{flex:1;padding:22px 24px 100px;max-width:1100px;width:100%;margin:0 auto;}
 .set-check{width:34px;height:34px;border-radius:8px;border:none;background:var(--surface2);color:var(--muted);font-size:15px;cursor:pointer;transition:all .15s;display:block;margin:auto;}
 .set-check:hover{background:var(--green);color:#fff;}
 .set-check.done{background:var(--green);color:#fff;}
+.set-check.timing{background:#60a5fa22;border:1px solid #60a5fa50;color:var(--blue);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;width:52px;padding:0 4px;animation:pulse 2s infinite;}
 .note-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-size:12px;outline:none;color:var(--muted);}
 .note-inp:focus{border-color:var(--accent);}
 .ex-card-footer{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;}
@@ -463,6 +464,7 @@ let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let editingTplId = null, editingExercises = [];
 let sessDurInterval = null;
 let restState = { active:false, total:0, remaining:0, exName:'', _iv:null };
+let setTimerState = { active:false, ei:-1, si:-1, remaining:0, _iv:null };
 let chartVolume = null, chartProgress = null;
 let _db = null, _auth = null, _user = null, _saveTimer = null;
 
@@ -816,7 +818,12 @@ function renderSeance() {
         html += '<td><input class="set-inp" type="number" min="0" value="' + set.reps + '"' + dis + ' onchange="updSetField(' + ei + ',' + si + ',\'reps\',this.value)"></td>';
       }
       html += '<td><div class="set-prev">' + prevStr + '</div></td>';
-      html += '<td><button class="set-check' + (set.done ? ' done' : '') + '" onclick="completeSet(' + ei + ',' + si + ')">' + (set.done ? '✓' : '○') + '</button></td>';
+      if (ex.type === 'timed' && !set.done) {
+        const isTiming = setTimerState.active && setTimerState.ei === ei && setTimerState.si === si;
+        html += '<td><button class="set-check' + (isTiming ? ' timing' : '') + '" data-settimer="' + ei + '-' + si + '" onclick="toggleSetTimer(' + ei + ',' + si + ')">' + (isTiming ? fmtDuration(setTimerState.remaining) : '▶') + '</button></td>';
+      } else {
+        html += '<td><button class="set-check' + (set.done ? ' done' : '') + '" onclick="completeSet(' + ei + ',' + si + ')">' + (set.done ? '✓' : '○') + '</button></td>';
+      }
       html += '</tr>';
       // Note row
       html += '<tr class="set-row' + dCls + '"><td colspan="5" style="padding:0 6px 6px">'
@@ -842,8 +849,49 @@ function updSetField(ei, si, field, val) {
   saveActive();
 }
 
+function toggleSetTimer(ei, si) {
+  if (!activeSession) return;
+  const set = activeSession.exercises[ei].sets[si];
+  if (set.done) { completeSet(ei, si); return; }
+  // Already running for this set → stop & validate
+  if (setTimerState.active && setTimerState.ei === ei && setTimerState.si === si) {
+    clearInterval(setTimerState._iv);
+    setTimerState = { active:false, ei:-1, si:-1, remaining:0, _iv:null };
+    completeSet(ei, si); return;
+  }
+  // Stop any existing set timer
+  clearInterval(setTimerState._iv);
+  const total = set.duration || 60;
+  setTimerState = { active:true, ei, si, remaining:total, _iv:null };
+  updateSetTimerBtn();
+  setTimerState._iv = setInterval(() => {
+    setTimerState.remaining--;
+    updateSetTimerBtn();
+    if (setTimerState.remaining <= 0) {
+      clearInterval(setTimerState._iv);
+      setTimerState = { active:false, ei:-1, si:-1, remaining:0, _iv:null };
+      completeSet(ei, si);
+      const ex = activeSession ? activeSession.exercises[ei] : null;
+      if (ex && (ex.restSeconds || 0) > 0) startRestTimer(ex.restSeconds, ex.name);
+      playBeep();
+    }
+  }, 1000);
+}
+function updateSetTimerBtn() {
+  if (!setTimerState.active) return;
+  const btn = document.querySelector('[data-settimer="' + setTimerState.ei + '-' + setTimerState.si + '"]');
+  if (!btn) return;
+  btn.classList.add('timing');
+  btn.textContent = fmtDuration(setTimerState.remaining);
+}
+
 function completeSet(ei, si) {
   if (!activeSession) return;
+  // Stop set timer if it was running for this set
+  if (setTimerState.active && setTimerState.ei === ei && setTimerState.si === si) {
+    clearInterval(setTimerState._iv);
+    setTimerState = { active:false, ei:-1, si:-1, remaining:0, _iv:null };
+  }
   const set = activeSession.exercises[ei].sets[si];
   set.done = !set.done;
   if (set.done) set.completedAt = Date.now();
