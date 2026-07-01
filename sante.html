@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>❤️ Santé</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222637;--border:#2e3248;
+  --accent:#14b8a6;--accent2:#2dd4bf;--text:#e2e4f0;--muted:#8b90a8;
+  --green:#34d399;--yellow:#fbbf24;--orange:#fb923c;--red:#f87171;--blue:#60a5fa;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── SETUP ── */
+.setup-overlay{position:fixed;inset:0;background:rgba(10,11,18,.97);z-index:600;overflow-y:auto;padding:20px;}
+.setup-overlay.hidden{display:none;}
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 40px;max-width:480px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,.6);margin:0 auto;}
+.setup-logo{font-size:36px;margin-bottom:16px;}
+.setup-title{font-size:20px;font-weight:800;margin-bottom:6px;}
+.setup-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+.setup-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;display:block;}
+.setup-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:9px;font-size:13px;outline:none;font-family:inherit;margin-bottom:14px;transition:border-color .15s;}
+.setup-input:focus{border-color:var(--accent);}
+textarea.setup-input{resize:vertical;min-height:100px;font-size:12px;line-height:1.4;}
+.setup-btn{width:100%;padding:13px;font-size:15px;font-weight:700;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;transition:background .15s;}
+.setup-btn:hover{background:var(--accent2);}
+.setup-btn:disabled{opacity:.5;cursor:not-allowed;}
+.setup-btn-sec{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;font-size:13px;}
+.setup-btn-sec:hover{background:var(--surface2);color:var(--text);}
+.setup-error{background:#f8717118;border:1px solid #f8717133;color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none;}
+.setup-or{text-align:center;color:var(--muted);font-size:12px;margin:12px 0;}
+.setup-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.radio-row{display:flex;gap:10px;margin-bottom:14px;}
+.radio-card{flex:1;padding:12px;border:1px solid var(--border);border-radius:9px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all .15s;background:var(--bg);}
+.radio-card.selected{border-color:var(--accent);background:#14b8a618;color:var(--accent);}
+
+/* ── SYNC BAR ── */
+.sync-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:10px;font-size:12px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sync-dot.ok{background:var(--green);box-shadow:0 0 5px var(--green);}
+.sync-dot.saving{background:var(--yellow);animation:pulse 1s infinite;}
+.sync-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-label{color:var(--muted);flex:1;}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;position:sticky;top:0;z-index:100;gap:12px;}
+.logo{display:flex;align-items:center;gap:8px;padding:14px 0;white-space:nowrap;flex-shrink:0;}
+.logo h1{font-size:17px;font-weight:700;}
+.tab-nav{display:flex;flex:1;}
+.tab-btn{padding:18px 14px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-btn:hover:not(.active){color:var(--text);}
+.header-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;color:inherit;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.btn-danger{background:#ef444422;color:var(--red);border:1px solid #ef444433;}
+.btn-danger:hover{background:#ef444433;}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-icon{padding:6px;width:32px;height:32px;justify-content:center;}
+
+/* ── MAIN ── */
+main{flex:1;padding:22px 24px 40px;max-width:960px;width:100%;margin:0 auto;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;margin-top:22px;}
+.section-title:first-child{margin-top:0;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.cards-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.cards-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.stat-icon{font-size:20px;margin-bottom:8px;}
+.stat-value{font-size:24px;font-weight:800;line-height:1;color:var(--accent);}
+.stat-unit{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px;}
+.stat-label{font-size:10px;color:var(--muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+
+/* ── BAC ── */
+.bac-hero{text-align:center;padding:28px 20px 20px;}
+.bac-value{font-size:72px;font-weight:900;line-height:1;letter-spacing:-3px;font-variant-numeric:tabular-nums;transition:color .5s;}
+.bac-unit{font-size:18px;font-weight:600;color:var(--muted);margin-top:4px;}
+.bac-status{display:inline-block;padding:5px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-top:12px;transition:all .5s;}
+.bac-ok{color:#34d399;background:#34d39920;border:1px solid #34d39940;}
+.bac-warn{color:#fbbf24;background:#fbbf2420;border:1px solid #fbbf2440;}
+.bac-danger{color:#fb923c;background:#fb923c20;border:1px solid #fb923c40;}
+.bac-red{color:#f87171;background:#f8717120;border:1px solid #f8717140;}
+.bac-bar-wrap{margin:16px 0 8px;position:relative;height:14px;border-radius:7px;overflow:hidden;background:var(--surface2);}
+.bac-bar-zones{position:absolute;inset:0;display:flex;}
+.bac-zone{height:100%;}
+.bac-needle{position:absolute;top:-4px;width:3px;height:22px;background:#fff;border-radius:2px;transform:translateX(-50%);transition:left .5s;box-shadow:0 0 6px rgba(255,255,255,.6);}
+.bac-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;padding:0 2px;}
+.bac-info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.bac-info-item{background:var(--surface2);border-radius:9px;padding:10px 12px;text-align:center;}
+.bac-info-val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+.bac-info-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* ── DRINK BUTTONS ── */
+.drink-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.drink-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .15s;width:100%;}
+.drink-btn:hover{border-color:var(--accent);background:#14b8a615;}
+.drink-emoji{font-size:22px;display:block;margin-bottom:4px;}
+.drink-name{font-size:11px;font-weight:600;color:var(--text);}
+.drink-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.drink-log{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;}
+.drink-item{background:var(--surface2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+.drink-item-time{font-size:11px;color:var(--muted);}
+.drink-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 2px;}
+.drink-remove:hover{color:var(--red);}
+.evening-item{background:var(--surface2);border-radius:9px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.evening-item:hover{border:1px solid var(--border);background:var(--surface);}
+.evening-bac{font-size:18px;font-weight:800;}
+.evening-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* ── HYDRATION ── */
+.hydra-hero{display:flex;flex-direction:column;align-items:center;padding:20px 0 10px;}
+.hydra-ring-wrap{position:relative;width:180px;height:180px;}
+.hydra-ring-wrap svg{width:100%;height:100%;}
+.hydra-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hydra-ml{font-size:30px;font-weight:800;line-height:1;color:var(--accent);}
+.hydra-goal-lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+.hydra-pct{font-size:13px;font-weight:700;color:var(--text);margin-top:2px;}
+.water-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0;}
+.water-btn{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:all .15s;}
+.water-btn:hover{border-color:var(--accent);color:var(--accent);}
+.hydra-log{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;}
+.hydra-entry{background:var(--surface2);border-radius:7px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+.hydra-entry-time{font-size:11px;color:var(--muted);}
+.hydra-entry-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;}
+.hydra-entry-remove:hover{color:var(--red);}
+.streak-badge{display:inline-flex;align-items:center;gap:6px;background:#fbbf2418;border:1px solid #fbbf2430;color:var(--yellow);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:12px;}
+
+/* ── CIGARETTES ── */
+.cig-hero{text-align:center;padding:24px 20px 16px;}
+.cig-count-wrap{display:flex;align-items:baseline;justify-content:center;gap:6px;}
+.cig-count{font-size:80px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;transition:color .3s;}
+.cig-sep{font-size:36px;color:var(--muted);font-weight:300;}
+.cig-goal-num{font-size:36px;font-weight:700;color:var(--muted);}
+.cig-label{font-size:14px;color:var(--muted);margin-top:6px;}
+.cig-timer{font-size:13px;color:var(--muted);margin-top:8px;min-height:20px;}
+.cig-timer span{color:var(--text);font-weight:600;}
+.cig-smoke-btn{display:block;width:100%;max-width:280px;margin:16px auto 0;padding:16px;font-size:16px;font-weight:700;border-radius:12px;border:none;cursor:pointer;transition:all .15s;background:#fb923c20;border:2px solid #fb923c40;color:var(--orange);}
+.cig-smoke-btn:hover{background:#fb923c35;border-color:var(--orange);}
+.savings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+.savings-card{background:var(--surface2);border-radius:10px;padding:14px;text-align:center;}
+.savings-val{font-size:22px;font-weight:800;color:var(--green);}
+.savings-lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.chart-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+.chart-wrap{position:relative;height:180px;}
+
+/* ── STATS ── */
+.stats-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.stats-cal-legend{display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:var(--muted);}
+.stats-cal-legend span{display:flex;align-items:center;gap:5px;}
+.stats-cal-dot{width:10px;height:10px;border-radius:3px;}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:slideUp .2s ease;margin:auto;}
+.modal-sm{max-width:380px;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.modal-header h2{font-size:15px;font-weight:700;}
+.modal-close{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.modal-close:hover{background:var(--border);color:var(--text);}
+.modal-body{padding:16px 20px 20px;}
+.modal-footer{padding:10px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.form-group{margin-bottom:12px;}
+.form-label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-input,.form-select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:14px;outline:none;transition:border-color .15s;font-family:inherit;}
+.form-input:focus,.form-select:focus{border-color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-select option{background:var(--surface2);}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.35;}
+
+/* ── TOAST ── */
+.toast-ctr{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:999;}
+.toast{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:toastIn .2s ease;}
+.toast.success{border-color:var(--green);}
+.toast.error{border-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── PROFILE BANNER ── */
+.profile-banner{background:#14b8a615;border:1px solid #14b8a630;border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-size:13px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  main{padding:14px 14px 40px;}
+  header{padding:0 12px;}
+  .tab-btn{padding:16px 9px;font-size:12px;}
+  .cards-row,.cards-row-3,.stats-overview{grid-template-columns:1fr 1fr;}
+  .drink-grid{grid-template-columns:repeat(2,1fr);}
+  .bac-info-row{grid-template-columns:1fr 1fr;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- ── SETUP ── -->
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-card">
+    <div id="screenConfig">
+      <div class="setup-logo">🔥</div>
+      <div class="setup-title">Configuration Firebase</div>
+      <div class="setup-sub">Colle la même config Firebase que tes autres applications.</div>
+      <hr class="setup-divider">
+      <label class="setup-label">Config Firebase</label>
+      <textarea class="setup-input" id="fbConfigInput" placeholder='{ "apiKey": "...", "databaseURL": "https://...", ... }'></textarea>
+      <button class="setup-btn" id="configNextBtn" onclick="doFbConfig()">Suivant →</button>
+      <div class="setup-error" id="setupError"></div>
+    </div>
+    <div id="screenAuth" style="display:none">
+      <div class="setup-logo">🔑</div>
+      <div class="setup-title">Connexion</div>
+      <div class="setup-sub">Même compte que tes autres applications.</div>
+      <label class="setup-label">Email</label>
+      <input type="email" class="setup-input" id="authEmail" autocomplete="email" placeholder="toi@exemple.com">
+      <label class="setup-label">Mot de passe</label>
+      <input type="password" class="setup-input" id="authPassword" autocomplete="current-password" placeholder="••••••••">
+      <button class="setup-btn" id="authSignInBtn" onclick="doSignIn()">Se connecter →</button>
+      <div class="setup-or">ou</div>
+      <button class="setup-btn setup-btn-sec" onclick="doSignUp()">Créer mon compte</button>
+      <div class="setup-error" id="setupError2"></div>
+    </div>
+    <div id="screenProfile" style="display:none">
+      <div class="setup-logo">👤</div>
+      <div class="setup-title">Mon profil santé</div>
+      <div class="setup-sub">Ces informations servent au calcul du taux d'alcoolémie et de tes objectifs.</div>
+      <hr class="setup-divider">
+      <label class="setup-label">Sexe</label>
+      <div class="radio-row" id="sexRadio">
+        <div class="radio-card selected" data-val="m" onclick="selectSex('m')">♂ Homme</div>
+        <div class="radio-card" data-val="f" onclick="selectSex('f')">♀ Femme</div>
+      </div>
+      <label class="setup-label">Poids (kg)</label>
+      <input type="number" class="setup-input" id="setupWeight" placeholder="70" min="30" max="250">
+      <label class="setup-label">Objectif hydratation (ml/jour)</label>
+      <input type="number" class="setup-input" id="setupHydraGoal" value="2000" min="500" max="5000">
+      <label class="setup-label">Objectif max cigarettes / jour</label>
+      <input type="number" class="setup-input" id="setupCigGoal" value="10" min="0" max="100">
+      <label class="setup-label">Prix d'un paquet (20 cig.) en €</label>
+      <input type="number" class="setup-input" id="setupCigPrice" value="12" min="1" max="30" step="0.5">
+      <label class="setup-label">Ma consommation de base (cig./jour, avant objectif)</label>
+      <input type="number" class="setup-input" id="setupCigBaseline" value="20" min="0" max="100">
+      <button class="setup-btn" onclick="saveProfileSetup()">Commencer →</button>
+      <div class="setup-error" id="setupError3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SYNC BAR ── -->
+<div class="sync-bar" id="syncBar" style="display:none">
+  <div class="sync-dot ok" id="syncDot"></div>
+  <div class="sync-label" id="syncLabel">Synchronisé · <strong id="syncUserEmail"></strong></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost btn-sm" onclick="syncNow()">↻</button>
+    <button class="btn btn-ghost btn-sm" onclick="doSignOut()">⎋</button>
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <a href="index.html" class="btn btn-ghost btn-sm" style="text-decoration:none" title="Accueil">🏠</a>
+    <span style="font-size:22px;margin-left:2px">❤️</span>
+    <h1>Santé</h1>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('alcool',this)">🍺 Alcool</button>
+    <button class="tab-btn" onclick="showTab('hydra',this)">💧 Hydratation</button>
+    <button class="tab-btn" onclick="showTab('cigs',this)">🚬 Cigarettes</button>
+    <button class="tab-btn" onclick="showTab('stats',this)">📊 Stats</button>
+  </nav>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙</button>
+  </div>
+</header>
+
+<main>
+  <!-- TAB: ALCOOL -->
+  <div class="tab-content active" id="tabAlcool">
+    <div id="bacHero" class="card" style="margin-bottom:16px">
+      <div class="bac-hero">
+        <div class="bac-value" id="bacValue">0.00</div>
+        <div class="bac-unit">g/L de sang</div>
+        <div class="bac-status bac-ok" id="bacStatus">SOBRE</div>
+        <div class="bac-bar-wrap" id="bacBarWrap" style="max-width:360px;margin:16px auto 8px">
+          <div class="bac-bar-zones">
+            <div class="bac-zone" style="width:13.3%;background:#34d39960"></div>
+            <div class="bac-zone" style="width:20%;background:#fbbf2460"></div>
+            <div class="bac-zone" style="width:20%;background:#fb923c60"></div>
+            <div class="bac-zone" style="width:46.7%;background:#f8717160"></div>
+          </div>
+          <div class="bac-needle" id="bacNeedle" style="left:0%"></div>
+        </div>
+        <div class="bac-labels" style="max-width:360px;margin:0 auto">
+          <span>0.0</span><span>0.2</span><span>0.5</span><span>0.8</span><span>1.5</span>
+        </div>
+        <div class="bac-info-row" id="bacInfoRow" style="max-width:400px;margin:14px auto 0">
+          <div class="bac-info-item">
+            <div class="bac-info-val" id="bacTimeSince">—</div>
+            <div class="bac-info-lbl">Depuis 1er verre</div>
+          </div>
+          <div class="bac-info-item">
+            <div class="bac-info-val" id="bacTimeToLegal">—</div>
+            <div class="bac-info-lbl">Retour à 0.5 g/L</div>
+          </div>
+          <div class="bac-info-item">
+            <div class="bac-info-val" id="bacTimeToSober">—</div>
+            <div class="bac-info-lbl">Retour à 0.0 g/L</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Ajouter une consommation</div>
+    <div class="drink-grid" id="drinkGrid"></div>
+
+    <div id="activeEveningSection" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="section-title" style="margin:0">Verres de cette soirée</div>
+        <button class="btn btn-sm" style="background:#34d39920;border:1px solid #34d39940;color:var(--green)" onclick="saveEvening()">✓ Terminer la soirée</button>
+      </div>
+      <div class="drink-log" id="drinkLog"></div>
+    </div>
+
+    <div class="section-title">Historique des soirées</div>
+    <div id="eveningList"></div>
+  </div>
+
+  <!-- TAB: HYDRATATION -->
+  <div class="tab-content" id="tabHydra">
+    <div class="card" style="margin-bottom:16px">
+      <div class="hydra-hero">
+        <div class="hydra-ring-wrap">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#2e3248" stroke-width="16"/>
+            <circle cx="100" cy="100" r="80" fill="none" id="hydraRingCircle"
+              stroke="#14b8a6" stroke-width="16" stroke-linecap="round"
+              stroke-dasharray="502.65 502.65" stroke-dashoffset="502.65"
+              transform="rotate(-90 100 100)" style="transition:stroke-dashoffset .6s ease"/>
+          </svg>
+          <div class="hydra-ring-center">
+            <div class="hydra-ml" id="hydraMl">0</div>
+            <div class="hydra-goal-lbl" id="hydraGoalLbl">/ 2000 ml</div>
+            <div class="hydra-pct" id="hydraPct">0%</div>
+          </div>
+        </div>
+        <div class="streak-badge" id="hydraStreak" style="display:none">🔥 <span id="hydraStreakDays">0</span> j d'affilée !</div>
+      </div>
+      <div class="water-btns" id="waterBtns"></div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="section-title" style="margin:0">Aujourd'hui</div>
+      <button class="btn btn-ghost btn-sm" onclick="resetHydraToday()">Réinitialiser</button>
+    </div>
+    <div class="hydra-log" id="hydraLog"></div>
+  </div>
+
+  <!-- TAB: CIGARETTES -->
+  <div class="tab-content" id="tabCigs">
+    <div class="card" style="margin-bottom:16px">
+      <div class="cig-hero">
+        <div class="cig-count-wrap">
+          <div class="cig-count" id="cigCount">0</div>
+          <div class="cig-sep">/</div>
+          <div class="cig-goal-num" id="cigGoalNum">10</div>
+        </div>
+        <div class="cig-label">cigarettes aujourd'hui / objectif</div>
+        <div class="cig-timer" id="cigTimer"></div>
+        <button class="cig-smoke-btn" onclick="smokeCig()">🚬 J'ai fumé</button>
+      </div>
+    </div>
+
+    <div class="section-title">Économies réalisées</div>
+    <div class="savings-row">
+      <div class="savings-card">
+        <div class="savings-val" id="savingsWeek">0€</div>
+        <div class="savings-lbl">Cette semaine</div>
+      </div>
+      <div class="savings-card">
+        <div class="savings-val" id="savingsMonth">0€</div>
+        <div class="savings-lbl">Ce mois-ci</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📊 Cigarettes / jour — 14 derniers jours</div>
+      <div class="chart-wrap"><canvas id="chartCigs"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TAB: STATS -->
+  <div class="tab-content" id="tabStats">
+    <div class="section-title">Cette semaine</div>
+    <div class="stats-overview" id="statsOverview"></div>
+    <div class="section-title">Les 30 derniers jours</div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">💧 Hydratation journalière (ml)</div>
+      <div class="chart-wrap"><canvas id="chartHydraHistory"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🚬 Cigarettes par jour</div>
+      <div class="chart-wrap"><canvas id="chartCigsHistory"></canvas></div>
+    </div>
+  </div>
+</main>
+
+<!-- ── MODAL: CUSTOM DRINK ── -->
+<div class="modal-overlay" id="customDrinkOverlay" onclick="if(event.target===this)closeCustomDrink()">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>🍹 Boisson personnalisée</h2><button class="modal-close" onclick="closeCustomDrink()">×</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom</label>
+        <input class="form-input" id="customName" placeholder="Mojito, bière artisanale…">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Volume (cl)</label>
+          <input type="number" class="form-input" id="customVolume" placeholder="25" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alcool (%)</label>
+          <input type="number" class="form-input" id="customAbv" placeholder="5" min="0" max="100" step="0.5">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCustomDrink()">Annuler</button>
+      <button class="btn btn-primary" onclick="addCustomDrink()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: SETTINGS ── -->
+<div class="modal-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-header"><h2>⚙ Paramètres & Profil</h2><button class="modal-close" onclick="closeSettings()">×</button></div>
+    <div class="modal-body">
+      <div class="section-title" style="margin-top:0">Profil</div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Sexe</label>
+          <select class="form-select" id="settingsSex">
+            <option value="m">♂ Homme</option>
+            <option value="f">♀ Femme</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Poids (kg)</label>
+          <input type="number" class="form-input" id="settingsWeight" min="30" max="250">
+        </div>
+      </div>
+      <div class="section-title">Objectifs</div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Hydratation (ml/jour)</label>
+          <input type="number" class="form-input" id="settingsHydraGoal">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Objectif cig./jour</label>
+          <input type="number" class="form-input" id="settingsCigGoal">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Prix paquet (€)</label>
+          <input type="number" class="form-input" id="settingsCigPrice" step="0.5">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Conso. base (cig./jour)</label>
+          <input type="number" class="form-input" id="settingsCigBaseline">
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="index.html" class="btn btn-ghost btn-sm" style="text-decoration:none">📋 Projets</a>
+        <a href="course.html" class="btn btn-ghost btn-sm" style="text-decoration:none">🏃 Courses</a>
+        <a href="muscu.html" class="btn btn-ghost btn-sm" style="text-decoration:none">💪 Muscu</a>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-danger btn-sm" onclick="resetFbConfig()">🔄 Changer la config Firebase</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: EVENING DETAIL ── -->
+<div class="modal-overlay" id="eveningDetailOverlay" onclick="if(event.target===this)closeEveningDetail()">
+  <div class="modal">
+    <div class="modal-header"><h2 id="eveningDetailTitle">Soirée</h2><button class="modal-close" onclick="closeEveningDetail()">×</button></div>
+    <div class="modal-body" id="eveningDetailBody"></div>
+  </div>
+</div>
+
+<!-- ── MODAL: ADD WATER CUSTOM ── -->
+<div class="modal-overlay" id="customWaterOverlay" onclick="if(event.target===this)closeCustomWater()">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>💧 Quantité personnalisée</h2><button class="modal-close" onclick="closeCustomWater()">×</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Quantité (ml)</label>
+        <input type="number" class="form-input" id="customWaterMl" placeholder="300" min="10" max="3000">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCustomWater()">Annuler</button>
+      <button class="btn btn-primary" onclick="addCustomWater()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-ctr" id="toastCtr"></div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const LS_PROFILE       = 'sante_profile_v1';
+const LS_EVENINGS      = 'sante_evenings_v1';
+const LS_ACTIVE_EVE    = 'sante_active_evening_v1';
+const LS_HYDRA_TODAY   = 'sante_hydra_today_v1';
+const LS_CIGS_HISTORY  = 'sante_cigs_history_v1';
+const LS_FB_CONFIG     = 'fb_config';
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let profile = { sex:'m', weight:70, hydrationGoalMl:2000, cigDailyGoal:10, cigPricePerPack:12, cigBaselinePerDay:20, setupDone:false };
+let evenings = [];
+let activeEvening = null;     // { id, startedAt, drinks:[{id,name,grams,addedAt}] }
+let hydraToday = null;        // { date, entries:[{ml,at}] }
+let cigsHistory = [];         // [{date,count,lastAt}]
+let _db = null, _auth = null, _user = null, _saveTimer = null;
+let _bacInterval = null, _cigTimerInterval = null;
+let chartCigs = null, chartHydraHistory = null, chartCigsHistory = null;
+let _profileSex = 'm';
+
+// ── PRESET DRINKS ─────────────────────────────────────────────────────────────
+const DRINKS = [
+  { id:'beer25',  emoji:'🍺', name:'Bière',     sub:'25cl · 5%',    volumeCl:25,  abv:5   },
+  { id:'beer33',  emoji:'🍺', name:'Bière',     sub:'33cl · 5%',    volumeCl:33,  abv:5   },
+  { id:'wine',    emoji:'🍷', name:'Vin',        sub:'12.5cl · 12%', volumeCl:12.5,abv:12  },
+  { id:'champ',   emoji:'🥂', name:'Champagne',  sub:'10cl · 12%',   volumeCl:10,  abv:12  },
+  { id:'shot',    emoji:'🥃', name:'Shot',       sub:'4cl · 40%',    volumeCl:4,   abv:40  },
+  { id:'custom',  emoji:'🍹', name:'Personnalisé',sub:'volume libre', volumeCl:0,   abv:0   }
+];
+
+function alcoholGrams(volumeCl, abv) { return volumeCl * abv * 0.0789; }
+
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+function initFirebase(config) {
+  try {
+    if (firebase.apps.length) firebase.apps[0].delete().catch(() => {});
+    firebase.initializeApp(config);
+    _auth = firebase.auth();
+    _auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    _db   = firebase.database();
+    _auth.onAuthStateChanged(user => {
+      if (user) {
+        _user = user;
+        document.getElementById('setupOverlay').classList.add('hidden');
+        showSyncBar();
+        loadFromFirebase();
+      } else {
+        _user = null;
+        showScreen('screenAuth');
+      }
+    });
+  } catch(e) {
+    document.getElementById('configNextBtn').disabled = false;
+    document.getElementById('configNextBtn').textContent = 'Suivant →';
+    showSetupError('Erreur Firebase : ' + e.message, 'setupError');
+  }
+}
+
+function doFbConfig() {
+  try {
+    let raw = document.getElementById('fbConfigInput').value.trim();
+    if (!raw) { showSetupError('Colle la config Firebase.', 'setupError'); return; }
+    raw = raw.replace(/[""«»„‟]/g, '"').replace(/[''‚‛]/g, "'");
+    raw = raw.replace(/^(?:const|let|var)\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '').trim();
+    raw = raw.replace(/^\(?\s*(\{[\s\S]*\})\s*\)?$/, '$1').trim();
+    raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+    let cfg;
+    try { cfg = JSON.parse(raw); } catch(e) { showSetupError('Format invalide : ' + e.message, 'setupError'); return; }
+    if (!cfg.apiKey)      { showSetupError('apiKey manquant.', 'setupError'); return; }
+    if (!cfg.databaseURL) { showSetupError('databaseURL manquant.', 'setupError'); return; }
+    localStorage.setItem(LS_FB_CONFIG, JSON.stringify(cfg));
+    document.getElementById('configNextBtn').disabled = true;
+    document.getElementById('configNextBtn').textContent = 'Connexion…';
+    initFirebase(cfg);
+  } catch(e) { showSetupError('Erreur : ' + e.message, 'setupError'); }
+}
+
+async function doSignIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pw = document.getElementById('authPassword').value;
+  if (!email || !pw) { showSetupError('Email et mot de passe requis.', 'setupError2'); return; }
+  const btn = document.getElementById('authSignInBtn');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try { await _auth.signInWithEmailAndPassword(email, pw); }
+  catch(e) {
+    const m = {'auth/user-not-found':'Compte introuvable.','auth/wrong-password':'Mot de passe incorrect.','auth/invalid-credential':'Email ou mot de passe incorrect.'};
+    showSetupError(m[e.code] || e.message, 'setupError2');
+    btn.disabled = false; btn.textContent = 'Se connecter →';
+  }
+}
+async function doSignUp() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pw = document.getElementById('authPassword').value;
+  if (!email || !pw) { showSetupError('Email et mot de passe requis.', 'setupError2'); return; }
+  try { await _auth.createUserWithEmailAndPassword(email, pw); toast('🎉 Compte créé !', 'success'); }
+  catch(e) { showSetupError(e.message, 'setupError2'); }
+}
+async function doSignOut() {
+  if (!confirm('Se déconnecter ?')) return;
+  await _auth.signOut(); _user = null;
+  document.getElementById('syncBar').style.display = 'none';
+  showScreen('screenAuth');
+}
+function showScreen(id) {
+  ['screenConfig','screenAuth','screenProfile'].forEach(s => document.getElementById(s).style.display = 'none');
+  ['setupError','setupError2','setupError3'].forEach(s => document.getElementById(s).style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  document.getElementById('setupOverlay').classList.remove('hidden');
+}
+function showSetupError(msg, id) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
+
+function selectSex(val) {
+  _profileSex = val;
+  document.querySelectorAll('#sexRadio .radio-card').forEach(c => c.classList.toggle('selected', c.dataset.val === val));
+}
+function saveProfileSetup() {
+  const w = parseFloat(document.getElementById('setupWeight').value);
+  if (!w || w < 30) { showSetupError('Renseigne un poids valide.', 'setupError3'); return; }
+  profile = {
+    sex: _profileSex,
+    weight: w,
+    hydrationGoalMl: parseInt(document.getElementById('setupHydraGoal').value) || 2000,
+    cigDailyGoal: parseInt(document.getElementById('setupCigGoal').value) || 10,
+    cigPricePerPack: parseFloat(document.getElementById('setupCigPrice').value) || 12,
+    cigBaselinePerDay: parseInt(document.getElementById('setupCigBaseline').value) || 20,
+    setupDone: true
+  };
+  localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+  document.getElementById('setupOverlay').classList.add('hidden');
+  saveToFirebase(); renderAll(); toast('✅ Profil enregistré !', 'success');
+}
+
+// ── SYNC ─────────────────────────────────────────────────────────────────────
+function showSyncBar() {
+  document.getElementById('syncBar').style.display = 'flex';
+  document.getElementById('syncUserEmail').textContent = _user?.email || '';
+  setSyncStatus('ok', 'Synchronisé · ');
+  if (!profile.setupDone) showScreen('screenProfile');
+}
+function setSyncStatus(state, msg) {
+  document.getElementById('syncDot').className = 'sync-dot ' + state;
+  document.getElementById('syncLabel').innerHTML = msg + '<strong>' + esc(_user?.email || '') + '</strong>';
+}
+async function syncNow() {
+  if (!_user || !_db) return;
+  setSyncStatus('saving', 'Synchronisation… · ');
+  try {
+    const snap = await _db.ref('users/' + _user.uid + '/sante').once('value');
+    mergeFirebaseData(snap.val() || {});
+    setSyncStatus('ok', 'Synchronisé · '); renderAll(); toast('↻ Rafraîchi', 'success');
+  } catch { setSyncStatus('error', 'Erreur réseau · '); }
+}
+function mergeFirebaseData(data) {
+  if (data.profile && data.profile.setupDone) { profile = { ...profile, ...data.profile }; localStorage.setItem(LS_PROFILE, JSON.stringify(profile)); }
+  if (Array.isArray(data.evenings)) { evenings = data.evenings; localStorage.setItem(LS_EVENINGS, JSON.stringify(evenings)); }
+  if (Array.isArray(data.cigsHistory)) { cigsHistory = data.cigsHistory; localStorage.setItem(LS_CIGS_HISTORY, JSON.stringify(cigsHistory)); }
+}
+async function loadFromFirebase() {
+  if (!_user || !_db) return;
+  setSyncStatus('saving', 'Chargement… · ');
+  try {
+    const snap = await _db.ref('users/' + _user.uid + '/sante').once('value');
+    mergeFirebaseData(snap.val() || {});
+    setSyncStatus('ok', 'Synchronisé · ');
+    if (!profile.setupDone) showScreen('screenProfile');
+    renderAll();
+  } catch { setSyncStatus('error', 'Erreur réseau · '); }
+}
+function saveToFirebase() {
+  if (!_user || !_db) return;
+  clearTimeout(_saveTimer); setSyncStatus('saving', 'Sauvegarde… · ');
+  _saveTimer = setTimeout(async () => {
+    try {
+      await _db.ref('users/' + _user.uid + '/sante').set({ profile, evenings, cigsHistory, savedAt: new Date().toISOString() });
+      setSyncStatus('ok', 'Synchronisé · ');
+    } catch { setSyncStatus('error', 'Erreur — local seulement · '); }
+  }, 800);
+}
+function saveLocal() {
+  localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+  localStorage.setItem(LS_EVENINGS, JSON.stringify(evenings));
+  localStorage.setItem(LS_CIGS_HISTORY, JSON.stringify(cigsHistory));
+  if (hydraToday) localStorage.setItem(LS_HYDRA_TODAY, JSON.stringify(hydraToday));
+  if (activeEvening) localStorage.setItem(LS_ACTIVE_EVE, JSON.stringify(activeEvening));
+  else localStorage.removeItem(LS_ACTIVE_EVE);
+}
+function save() { saveLocal(); saveToFirebase(); }
+function resetFbConfig() { if (!confirm('Réinitialiser la config Firebase ?')) return; localStorage.removeItem(LS_FB_CONFIG); location.reload(); }
+
+// ── LOAD ─────────────────────────────────────────────────────────────────────
+function load() {
+  try { const p = localStorage.getItem(LS_PROFILE); if (p) profile = { ...profile, ...JSON.parse(p) }; } catch {}
+  try { const e = localStorage.getItem(LS_EVENINGS); evenings = e ? JSON.parse(e) : []; } catch { evenings = []; }
+  try { const a = localStorage.getItem(LS_ACTIVE_EVE); activeEvening = a ? JSON.parse(a) : null; } catch { activeEvening = null; }
+  try { const h = localStorage.getItem(LS_HYDRA_TODAY); hydraToday = h ? JSON.parse(h) : null; } catch { hydraToday = null; }
+  try { const c = localStorage.getItem(LS_CIGS_HISTORY); cigsHistory = c ? JSON.parse(c) : []; } catch { cigsHistory = []; }
+  ensureHydraToday(); ensureCigToday();
+  try { renderAll(); } catch(e) { console.warn('renderAll:', e); }
+  startIntervals();
+  const raw = localStorage.getItem(LS_FB_CONFIG);
+  if (raw) { try { initFirebase(JSON.parse(raw)); } catch { localStorage.removeItem(LS_FB_CONFIG); showScreen('screenConfig'); } }
+  else showScreen('screenConfig');
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'stats') renderStats();
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('settingsSex').value = profile.sex || 'm';
+  document.getElementById('settingsWeight').value = profile.weight || 70;
+  document.getElementById('settingsHydraGoal').value = profile.hydrationGoalMl || 2000;
+  document.getElementById('settingsCigGoal').value = profile.cigDailyGoal || 10;
+  document.getElementById('settingsCigPrice').value = profile.cigPricePerPack || 12;
+  document.getElementById('settingsCigBaseline').value = profile.cigBaselinePerDay || 20;
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function saveSettings() {
+  profile.sex = document.getElementById('settingsSex').value;
+  profile.weight = parseFloat(document.getElementById('settingsWeight').value) || 70;
+  profile.hydrationGoalMl = parseInt(document.getElementById('settingsHydraGoal').value) || 2000;
+  profile.cigDailyGoal = parseInt(document.getElementById('settingsCigGoal').value) || 10;
+  profile.cigPricePerPack = parseFloat(document.getElementById('settingsCigPrice').value) || 12;
+  profile.cigBaselinePerDay = parseInt(document.getElementById('settingsCigBaseline').value) || 20;
+  closeSettings(); save(); renderAll(); toast('✅ Paramètres enregistrés', 'success');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() { renderAlcool(); renderHydra(); renderCigs(); }
+
+// ════════════════════════════════════════════════════════════
+// ── ALCOOL ────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+function computeBAC() {
+  if (!activeEvening || !(activeEvening.drinks || []).length) return 0;
+  const r = profile.sex === 'f' ? 0.55 : 0.68;
+  const totalG = (activeEvening.drinks || []).reduce((s, d) => s + (d.grams || 0), 0);
+  const firstAt = Math.min(...activeEvening.drinks.map(d => d.addedAt));
+  const hoursElapsed = Math.max(0, (Date.now() - firstAt) / 3600000 - 0.25); // 15min absorption delay
+  const rawBAC = (totalG * 0.8) / (profile.weight * r);
+  return Math.max(0, rawBAC - 0.15 * hoursElapsed);
+}
+function bacColor(bac) {
+  if (bac < 0.2) return '#34d399';
+  if (bac < 0.5) return '#fbbf24';
+  if (bac < 0.8) return '#fb923c';
+  return '#f87171';
+}
+function bacStatusInfo(bac) {
+  if (bac < 0.01) return { text: 'SOBRE', cls: 'bac-ok' };
+  if (bac < 0.2)  return { text: 'BON ÉTAT', cls: 'bac-ok' };
+  if (bac < 0.5)  return { text: 'PRUDENCE', cls: 'bac-warn' };
+  if (bac < 0.8)  return { text: 'INTERDIT CONDUITE', cls: 'bac-danger' };
+  return { text: '⚠️ DANGER', cls: 'bac-red' };
+}
+
+function renderAlcool() {
+  const bac = computeBAC();
+  const col = bacColor(bac);
+  const info = bacStatusInfo(bac);
+  document.getElementById('bacValue').textContent = bac.toFixed(2);
+  document.getElementById('bacValue').style.color = col;
+  const sEl = document.getElementById('bacStatus');
+  sEl.textContent = info.text;
+  sEl.className = 'bac-status ' + info.cls;
+  // Needle: max scale = 1.5 g/L
+  const pct = Math.min(100, (bac / 1.5) * 100);
+  document.getElementById('bacNeedle').style.left = pct + '%';
+  // Info row
+  if (activeEvening && activeEvening.drinks.length) {
+    const firstAt = Math.min(...activeEvening.drinks.map(d => d.addedAt));
+    const elapsedSec = Math.floor((Date.now() - firstAt) / 1000);
+    document.getElementById('bacTimeSince').textContent = fmtDuration(elapsedSec);
+    // Time to legal (0.5)
+    const hoursToLegal = bac > 0.5 ? ((bac - 0.5) / 0.15) : 0;
+    document.getElementById('bacTimeToLegal').textContent = bac <= 0.5 ? '✓' : fmtHM(hoursToLegal);
+    // Time to sober (0.0)
+    const hoursToSober = bac > 0 ? (bac / 0.15) : 0;
+    document.getElementById('bacTimeToSober').textContent = bac <= 0 ? '✓' : fmtHM(hoursToSober);
+  } else {
+    document.getElementById('bacTimeSince').textContent = '—';
+    document.getElementById('bacTimeToLegal').textContent = '—';
+    document.getElementById('bacTimeToSober').textContent = '—';
+  }
+  // Drink buttons
+  document.getElementById('drinkGrid').innerHTML = DRINKS.map(d =>
+    '<button class="drink-btn" onclick="addDrink(\'' + d.id + '\')">'
+    + '<span class="drink-emoji">' + d.emoji + '</span>'
+    + '<div class="drink-name">' + d.name + '</div>'
+    + '<div class="drink-sub">' + d.sub + '</div></button>'
+  ).join('');
+  // Active evening drinks
+  const hasEve = activeEvening && activeEvening.drinks.length > 0;
+  document.getElementById('activeEveningSection').style.display = hasEve ? '' : 'none';
+  if (hasEve) {
+    document.getElementById('drinkLog').innerHTML = [...activeEvening.drinks].reverse().map((d, ri) => {
+      const i = activeEvening.drinks.length - 1 - ri;
+      return '<div class="drink-item"><span>🥂 ' + esc(d.name) + ' · ' + d.grams.toFixed(1) + 'g alcool</span>'
+        + '<div style="display:flex;align-items:center;gap:8px"><span class="drink-item-time">' + fmtTime(d.addedAt) + '</span>'
+        + '<button class="drink-remove" onclick="removeDrink(' + i + ')">×</button></div></div>';
+    }).join('');
+  }
+  // Evening history
+  const evList = document.getElementById('eveningList');
+  if (!evenings.length) {
+    evList.innerHTML = '<div class="empty"><div class="empty-icon">🍺</div><p>Aucune soirée enregistrée</p></div>';
+  } else {
+    evList.innerHTML = evenings.slice().reverse().slice(0, 10).map(ev => {
+      const maxBac = ev.maxBAC || 0;
+      return '<div class="evening-item" onclick="openEveningDetail(\'' + ev.id + '\')">'
+        + '<div><div class="evening-meta">' + fmtDate(ev.date) + ' · ' + (ev.drinks || []).length + ' verres · ' + fmtDuration(ev.durationSec || 0) + '</div></div>'
+        + '<div style="text-align:right"><div class="evening-bac" style="color:' + bacColor(maxBac) + '">' + maxBac.toFixed(2) + '</div>'
+        + '<div class="evening-meta">BAC max</div></div></div>';
+    }).join('');
+  }
+}
+
+function addDrink(id) {
+  if (id === 'custom') { document.getElementById('customDrinkOverlay').classList.add('open'); return; }
+  const preset = DRINKS.find(d => d.id === id);
+  if (!preset) return;
+  const grams = alcoholGrams(preset.volumeCl, preset.abv);
+  if (!activeEvening) activeEvening = { id: genId(), startedAt: Date.now(), drinks: [] };
+  activeEvening.drinks.push({ id: genId(), name: preset.name + ' (' + preset.sub + ')', grams, addedAt: Date.now() });
+  save(); renderAlcool();
+  toast('🥂 ' + preset.name + ' ajouté · ' + grams.toFixed(1) + 'g alcool', '');
+}
+function addCustomDrink() {
+  const name = document.getElementById('customName').value.trim() || 'Boisson';
+  const vol = parseFloat(document.getElementById('customVolume').value);
+  const abv = parseFloat(document.getElementById('customAbv').value);
+  if (!vol || abv == null || isNaN(abv)) { toast('⚠️ Renseigne le volume et l\'alcool.', 'error'); return; }
+  const grams = alcoholGrams(vol, abv);
+  if (!activeEvening) activeEvening = { id: genId(), startedAt: Date.now(), drinks: [] };
+  activeEvening.drinks.push({ id: genId(), name: name + ' (' + vol + 'cl · ' + abv + '%)', grams, addedAt: Date.now() });
+  closeCustomDrink(); save(); renderAlcool();
+  toast('🥂 ' + name + ' ajouté · ' + grams.toFixed(1) + 'g alcool', '');
+}
+function closeCustomDrink() { document.getElementById('customDrinkOverlay').classList.remove('open'); }
+function removeDrink(i) {
+  if (!activeEvening) return;
+  activeEvening.drinks.splice(i, 1);
+  if (!activeEvening.drinks.length) activeEvening = null;
+  save(); renderAlcool();
+}
+function saveEvening() {
+  if (!activeEvening || !activeEvening.drinks.length) return;
+  const maxBac = computeBAC();
+  const saved = { ...activeEvening, endedAt: Date.now(), date: todayStr(), maxBAC: maxBac, durationSec: Math.floor((Date.now() - activeEvening.startedAt) / 1000) };
+  evenings.unshift(saved);
+  activeEvening = null;
+  save(); renderAlcool(); toast('✅ Soirée enregistrée !', 'success');
+}
+function openEveningDetail(id) {
+  const ev = evenings.find(e => e.id === id);
+  if (!ev) return;
+  document.getElementById('eveningDetailTitle').textContent = '🍺 ' + fmtDate(ev.date);
+  let body = '<div style="margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap">'
+    + '<div class="bac-info-item"><div class="bac-info-val" style="color:' + bacColor(ev.maxBAC || 0) + '">' + (ev.maxBAC || 0).toFixed(2) + '</div><div class="bac-info-lbl">BAC max</div></div>'
+    + '<div class="bac-info-item"><div class="bac-info-val">' + (ev.drinks || []).length + '</div><div class="bac-info-lbl">Verres</div></div>'
+    + '<div class="bac-info-item"><div class="bac-info-val">' + fmtDuration(ev.durationSec || 0) + '</div><div class="bac-info-lbl">Durée</div></div>'
+    + '</div><div class="section-title" style="margin-top:0">Consommations</div>';
+  (ev.drinks || []).forEach(d => {
+    body += '<div class="drink-item" style="margin-bottom:5px"><span>' + esc(d.name) + ' · ' + (d.grams || 0).toFixed(1) + 'g</span>'
+      + '<span class="drink-item-time">' + fmtTime(d.addedAt) + '</span></div>';
+  });
+  document.getElementById('eveningDetailBody').innerHTML = body;
+  document.getElementById('eveningDetailOverlay').classList.add('open');
+}
+function closeEveningDetail() { document.getElementById('eveningDetailOverlay').classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════════
+// ── HYDRATATION ───────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+function ensureHydraToday() {
+  const today = todayStr();
+  if (!hydraToday || hydraToday.date !== today) hydraToday = { date: today, entries: [] };
+}
+function totalHydraToday() { return (hydraToday.entries || []).reduce((s, e) => s + e.ml, 0); }
+function renderHydra() {
+  ensureHydraToday();
+  const goal = profile.hydrationGoalMl || 2000;
+  const total = totalHydraToday();
+  const pct = Math.min(1, total / goal);
+  const circ = 502.65;
+  const offset = circ * (1 - pct);
+  document.getElementById('hydraRingCircle').setAttribute('stroke-dashoffset', offset.toFixed(1));
+  document.getElementById('hydraRingCircle').setAttribute('stroke', pct >= 1 ? '#34d399' : '#14b8a6');
+  document.getElementById('hydraMl').textContent = total;
+  document.getElementById('hydraGoalLbl').textContent = '/ ' + goal + ' ml';
+  document.getElementById('hydraPct').textContent = Math.round(pct * 100) + '%';
+  // Streak
+  const streak = getHydraStreak();
+  const sEl = document.getElementById('hydraStreak');
+  if (streak > 0) { sEl.style.display = ''; document.getElementById('hydraStreakDays').textContent = streak; }
+  else sEl.style.display = 'none';
+  // Water buttons
+  const waterPresets = [{ml:150,label:'Petit verre'},{ml:250,label:'Grand verre'},{ml:500,label:'Bouteille ½L'},{ml:1000,label:'Bouteille 1L'}];
+  document.getElementById('waterBtns').innerHTML = waterPresets.map(p =>
+    '<button class="water-btn" onclick="addWater(' + p.ml + ')">💧 ' + p.label + '<br><span style="font-size:11px;color:var(--muted)">' + p.ml + ' ml</span></button>'
+  ).join('') + '<button class="water-btn" onclick="openCustomWater()">✏️ Autre<br><span style="font-size:11px;color:var(--muted)">ml libres</span></button>';
+  // Log
+  if (!hydraToday.entries.length) {
+    document.getElementById('hydraLog').innerHTML = '<div class="empty"><div class="empty-icon">💧</div><p>Aucune consommation aujourd\'hui</p></div>';
+  } else {
+    document.getElementById('hydraLog').innerHTML = [...hydraToday.entries].reverse().map((e, ri) => {
+      const i = hydraToday.entries.length - 1 - ri;
+      return '<div class="hydra-entry"><span>💧 ' + e.ml + ' ml</span>'
+        + '<div style="display:flex;align-items:center;gap:8px"><span class="hydra-entry-time">' + fmtTime(e.at) + '</span>'
+        + '<button class="hydra-entry-remove" onclick="removeWater(' + i + ')">×</button></div></div>';
+    }).join('');
+  }
+}
+function addWater(ml) {
+  ensureHydraToday();
+  hydraToday.entries.push({ ml, at: Date.now() });
+  saveLocal(); renderHydra();
+  const total = totalHydraToday();
+  const goal = profile.hydrationGoalMl || 2000;
+  if (total >= goal) toast('🎉 Objectif hydratation atteint !', 'success');
+  else toast('💧 +' + ml + ' ml · ' + total + '/' + goal + ' ml', '');
+}
+function removeWater(i) { hydraToday.entries.splice(i, 1); saveLocal(); renderHydra(); }
+function resetHydraToday() { if (!confirm('Réinitialiser l\'hydratation d\'aujourd\'hui ?')) return; hydraToday = { date: todayStr(), entries: [] }; saveLocal(); renderHydra(); }
+function openCustomWater() { document.getElementById('customWaterMl').value = ''; document.getElementById('customWaterOverlay').classList.add('open'); }
+function closeCustomWater() { document.getElementById('customWaterOverlay').classList.remove('open'); }
+function addCustomWater() { const ml = parseInt(document.getElementById('customWaterMl').value); if (!ml || ml < 10) { toast('⚠️ Quantité invalide', 'error'); return; } closeCustomWater(); addWater(ml); }
+
+function getHydraStreak() {
+  // Count consecutive days before today where goal was met
+  // Since we only store today locally, streak = 1 if today's goal met, else 0
+  // For a real streak we'd need firebase history - simplified: check today
+  const total = totalHydraToday();
+  const goal = profile.hydrationGoalMl || 2000;
+  return total >= goal ? 1 : 0;
+}
+
+// ════════════════════════════════════════════════════════════
+// ── CIGARETTES ────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+function ensureCigToday() {
+  const today = todayStr();
+  const todayRec = cigsHistory.find(r => r.date === today);
+  if (!todayRec) cigsHistory.push({ date: today, count: 0, lastAt: null });
+}
+function todayCigRec() { return cigsHistory.find(r => r.date === todayStr()) || { date: todayStr(), count: 0, lastAt: null }; }
+function renderCigs() {
+  ensureCigToday();
+  const rec = todayCigRec();
+  const goal = profile.cigDailyGoal || 10;
+  const count = rec.count || 0;
+  const el = document.getElementById('cigCount');
+  el.textContent = count;
+  el.style.color = count <= goal ? 'var(--green)' : 'var(--red)';
+  document.getElementById('cigGoalNum').textContent = goal;
+  // Timer since last
+  const timerEl = document.getElementById('cigTimer');
+  if (rec.lastAt) {
+    const sec = Math.floor((Date.now() - rec.lastAt) / 1000);
+    timerEl.innerHTML = 'Dernière il y a <span>' + fmtSince(sec) + '</span>';
+  } else { timerEl.textContent = 'Aucune cigarette aujourd\'hui'; }
+  // Savings
+  renderSavings();
+  // Chart
+  renderCigChart();
+}
+function smokeCig() {
+  ensureCigToday();
+  const today = todayStr();
+  const i = cigsHistory.findIndex(r => r.date === today);
+  if (i >= 0) { cigsHistory[i].count++; cigsHistory[i].lastAt = Date.now(); }
+  else cigsHistory.push({ date: today, count: 1, lastAt: Date.now() });
+  save(); renderCigs();
+  const rec = todayCigRec();
+  const goal = profile.cigDailyGoal || 10;
+  if (rec.count > goal) toast('⚠️ Objectif dépassé (' + rec.count + '/' + goal + ')', 'error');
+  else toast('🚬 +1 · ' + rec.count + '/' + goal + ' aujourd\'hui', '');
+}
+
+function renderSavings() {
+  const pricePerCig = (profile.cigPricePerPack || 12) / 20;
+  const baseline = profile.cigBaselinePerDay || 20;
+  const goal = profile.cigDailyGoal || 10;
+  const savedPerDay = Math.max(0, baseline - goal) * pricePerCig;
+  // This week
+  const now = new Date(); now.setHours(0,0,0,0);
+  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  let daysThisWeek = 0;
+  const dayMs = 86400000;
+  for (let d = new Date(mon); d <= now; d = new Date(d.getTime() + dayMs)) daysThisWeek++;
+  const weekSavings = (savedPerDay * daysThisWeek).toFixed(2);
+  const monthDays = now.getDate();
+  const monthSavings = (savedPerDay * monthDays).toFixed(2);
+  document.getElementById('savingsWeek').textContent = weekSavings + '€';
+  document.getElementById('savingsMonth').textContent = monthSavings + '€';
+}
+function renderCigChart() {
+  const days = 14;
+  const labels = [], data = [];
+  const goal = profile.cigDailyGoal || 10;
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+    const ds = d.toISOString().slice(0, 10);
+    const rec = cigsHistory.find(r => r.date === ds);
+    labels.push(d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }));
+    data.push(rec ? (rec.count || 0) : 0);
+  }
+  if (chartCigs) chartCigs.destroy();
+  chartCigs = new Chart(document.getElementById('chartCigs').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: data.map(v => v > goal ? '#f8717180' : '#fb923c60'),
+        borderColor: data.map(v => v > goal ? '#f87171' : '#fb923c'),
+        borderWidth: 1, borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: {},
+        tooltip: { backgroundColor: '#1a1d27', borderColor: '#2e3248', borderWidth: 1, padding: 10, callbacks: { label: item => item.raw + ' cigarettes' } }
+      },
+      scales: {
+        x: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', font: { size: 10 }, maxRotation: 45 } },
+        y: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// ── STATS ─────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+function renderStats() {
+  // Week stats
+  const now = new Date(); now.setHours(0,0,0,0);
+  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const dayMs = 86400000;
+  const weekDates = [];
+  for (let d = new Date(mon); d <= now; d = new Date(d.getTime() + dayMs)) weekDates.push(d.toISOString().slice(0,10));
+  const weekEvenings = evenings.filter(e => weekDates.includes(e.date)).length;
+  const weekCigs = weekDates.reduce((s, ds) => { const r = cigsHistory.find(c => c.date === ds); return s + (r ? r.count : 0); }, 0);
+  const avgCigs = weekDates.length ? Math.round(weekCigs / weekDates.length) : 0;
+  const maxBacWeek = evenings.filter(e => weekDates.includes(e.date)).reduce((m, e) => Math.max(m, e.maxBAC || 0), 0);
+  document.getElementById('statsOverview').innerHTML =
+    mkStat('🍺', weekEvenings, '', 'Soirées cette semaine') +
+    mkStat('🚬', weekCigs, ' cig.', 'Cigarettes cette semaine') +
+    mkStat('📈', avgCigs, '/j', 'Moy. cig./jour') +
+    mkStat('🔴', maxBacWeek.toFixed(2), ' g/L', 'BAC max semaine') +
+    mkStat('💧', Math.round(totalHydraToday()), ' ml', 'Hydratation aujourd\'hui') +
+    mkStat('🎯', Math.round((totalHydraToday() / (profile.hydrationGoalMl || 2000)) * 100), '%', 'Objectif hydratation');
+  // 30-day hydration chart — we only have today's data locally; show what we have
+  renderHydraHistChart();
+  renderCigsHistChart();
+}
+function mkStat(icon, val, unit, label) {
+  return '<div class="stat-card"><div class="stat-icon">' + icon + '</div><div class="stat-value">' + val + '<span class="stat-unit">' + unit + '</span></div><div class="stat-label">' + label + '</div></div>';
+}
+function renderHydraHistChart() {
+  const days = 30;
+  const labels = [], data = [];
+  const goal = profile.hydrationGoalMl || 2000;
+  const today = todayStr();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+    const ds = d.toISOString().slice(0, 10);
+    labels.push(d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }));
+    data.push(ds === today ? totalHydraToday() : 0); // only today has local data
+  }
+  if (chartHydraHistory) chartHydraHistory.destroy();
+  chartHydraHistory = new Chart(document.getElementById('chartHydraHistory').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { data, backgroundColor: data.map(v => v >= goal ? '#34d39980' : '#14b8a660'), borderColor: data.map(v => v >= goal ? '#34d399' : '#14b8a6'), borderWidth: 1, borderRadius: 4, label: 'Hydratation' },
+        { type: 'line', data: Array(days).fill(goal), borderColor: '#14b8a640', borderDash: [4, 4], pointRadius: 0, borderWidth: 1, label: 'Objectif' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1d27', borderColor: '#2e3248', borderWidth: 1, padding: 10, callbacks: { label: item => item.raw + ' ml' } } },
+      scales: { x: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 45 } }, y: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', callback: v => v + ' ml' }, beginAtZero: true } }
+    }
+  });
+}
+function renderCigsHistChart() {
+  const days = 30;
+  const labels = [], data = [];
+  const goal = profile.cigDailyGoal || 10;
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+    const ds = d.toISOString().slice(0, 10);
+    const rec = cigsHistory.find(r => r.date === ds);
+    labels.push(d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }));
+    data.push(rec ? (rec.count || 0) : 0);
+  }
+  if (chartCigsHistory) chartCigsHistory.destroy();
+  chartCigsHistory = new Chart(document.getElementById('chartCigsHistory').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { data, backgroundColor: data.map(v => v > goal ? '#f8717180' : '#fb923c60'), borderColor: data.map(v => v > goal ? '#f87171' : '#fb923c'), borderWidth: 1, borderRadius: 4 },
+        { type: 'line', data: Array(days).fill(goal), borderColor: '#fb923c40', borderDash: [4, 4], pointRadius: 0, borderWidth: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1d27', borderColor: '#2e3248', borderWidth: 1, padding: 10, callbacks: { label: item => item.raw + ' cigarettes' } } },
+      scales: { x: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 45 } }, y: { grid: { color: '#2e3248' }, ticks: { color: '#8b90a8', stepSize: 1 }, beginAtZero: true } }
+    }
+  });
+}
+
+// ── INTERVALS ─────────────────────────────────────────────────────────────────
+function startIntervals() {
+  clearInterval(_bacInterval); clearInterval(_cigTimerInterval);
+  // Update BAC every 30s
+  _bacInterval = setInterval(() => { if (activeEvening) renderAlcool(); }, 30000);
+  // Update cig timer every 10s
+  _cigTimerInterval = setInterval(() => {
+    const rec = todayCigRec();
+    const timerEl = document.getElementById('cigTimer');
+    if (!timerEl) return;
+    if (rec && rec.lastAt) {
+      const sec = Math.floor((Date.now() - rec.lastAt) / 1000);
+      timerEl.innerHTML = 'Dernière il y a <span>' + fmtSince(sec) + '</span>';
+    }
+  }, 10000);
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(ds) { if (!ds) return ''; return new Date(ds + 'T00:00:00').toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'long', year:'numeric' }); }
+function fmtTime(ts) { if (!ts) return ''; return new Date(ts).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }); }
+function fmtDuration(sec) {
+  if (!sec || sec <= 0) return '—';
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60);
+  if (h > 0) return h + 'h' + String(m).padStart(2, '0');
+  return m + ':' + String(s).padStart(2, '0');
+}
+function fmtHM(hours) {
+  if (hours <= 0) return '✓';
+  const h = Math.floor(hours), m = Math.round((hours - h) * 60);
+  return h > 0 ? h + 'h' + String(m).padStart(2, '0') : m + ' min';
+}
+function fmtSince(sec) {
+  if (sec < 60) return sec + 's';
+  if (sec < 3600) return Math.floor(sec / 60) + ' min';
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  return h + 'h' + (m > 0 ? String(m).padStart(2, '0') : '');
+}
+function toast(msg, type) {
+  const c = document.getElementById('toastCtr');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || ''); el.textContent = msg; c.appendChild(el);
+  setTimeout(() => { el.style.cssText = 'opacity:0;transform:translateX(20px);transition:.3s'; setTimeout(() => el.remove(), 300); }, 3500);
+}
+
+// ── KEYBOARD ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeCustomDrink(); closeCustomWater(); closeSettings(); closeEveningDetail(); }
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('authPassword')) doSignIn();
+});
+
+// ── NAVIGATION LINKS in other apps ───────────────────────────────────────────
+// (Links to sante.html will be added to muscu.html, course.html, index.html separately)
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>
