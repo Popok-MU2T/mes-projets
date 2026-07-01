@@ -638,10 +638,21 @@ async function loadFromFirebase() {
 function load() {
   try { const s=localStorage.getItem(LS_SETTINGS); if(s) settings={...settings,...JSON.parse(s)}; } catch {}
   try { const r=localStorage.getItem(LS_KEY); runs=r?JSON.parse(r):[]; } catch { runs=[]; }
-  renderAll();
+  // renderAll in a try-catch so a Chart.js error never blocks Firebase init
+  try { renderAll(); } catch(e) { console.warn('renderAll error (non-fatal):', e); }
+  // Firebase init — always runs even if renderAll threw
   const raw=localStorage.getItem(LS_FB_CONFIG);
-  if (raw) { try { initFirebase(JSON.parse(raw)); } catch { localStorage.removeItem(LS_FB_CONFIG); showScreen('screenConfig'); } }
-  else showScreen('screenConfig');
+  if (raw) {
+    try {
+      initFirebase(JSON.parse(raw));
+    } catch(e) {
+      console.error('initFirebase error:', e);
+      localStorage.removeItem(LS_FB_CONFIG);
+      showScreen('screenConfig');
+    }
+  } else {
+    showScreen('screenConfig');
+  }
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
@@ -745,7 +756,7 @@ function renderPRs() {
   const b5=pr.filter(r=>r.distance>=4.5&&r.distance<=5.5).sort((a,b)=>(a.duration/a.distance)-(b.duration/b.distance))[0];
   const b10=pr.filter(r=>r.distance>=9&&r.distance<=11).sort((a,b)=>(a.duration/a.distance)-(b.duration/b.distance))[0];
   const bl=runs.filter(r=>r.distance).sort((a,b)=>b.distance-a.distance)[0];
-  const prCard=(medal,lbl,val,sub,date)=>`<div class="pr-card"><div class="pr-medal">${medal}</div><div><div class="pr-value">${val}</div><div class="pr-sublabel">${lbl}</div>${sub?`<div class="pr-date">${sub}</div>`:''}<div class="pr-date">${fmtDate(date)}</div></div></div>`;
+  const prCard=(medal,lbl,val,sub,date)=>{const subHtml=sub?'<div class="pr-date">'+sub+'</div>':'';return '<div class="pr-card"><div class="pr-medal">'+medal+'</div><div><div class="pr-value">'+val+'</div><div class="pr-sublabel">'+lbl+'</div>'+subHtml+'<div class="pr-date">'+fmtDate(date)+'</div></div></div>';};
   const empty=(medal,lbl,hint)=>`<div class="pr-card"><div class="pr-medal">${medal}</div><div class="pr-empty">${lbl}<br><span style="font-size:12px;font-weight:400">${hint}</span></div></div>`;
   document.getElementById('prsRow').innerHTML=
     (b5?prCard('🥇','Meilleur 5 km',fmtDuration(b5.duration),fmtPace(b5.duration/b5.distance),b5.date):empty('🥇','Meilleur 5 km','Pas encore de sortie ~5 km'))+
@@ -783,25 +794,24 @@ function renderRunsList() {
     const d=new Date(r.date+'T00:00:00'),day=d.toLocaleDateString('fr-FR',{day:'numeric'}),mon=d.toLocaleDateString('fr-FR',{month:'short'});
     const pace=r.distance&&r.duration?calcPaceSec(r.distance,r.duration):null;
     const zone=getZone(r.avgHR);
-    const zBadge=zone?`<span class="zone-pill" style="background:${zone.color}22;color:${zone.color}">Z${zone.num} ${zone.name}</span>`:'';
+    const zBadge=zone?'<span class="zone-pill" style="background:'+zone.color+'22;color:'+zone.color+'">Z'+zone.num+' '+zone.name+'</span>':'';
     const hasGPS=!!localStorage.getItem('tp_'+r.id);
-    return `<div class="run-card" onclick="openDetail('${r.id}')">
-      <div class="run-date-col"><div class="run-day">${day}</div><div class="run-month">${mon}</div></div>
-      <div>
-        <div class="run-body">
-          <div><span class="run-dist">${r.distance?r.distance.toFixed(2):'—'}</span><span class="run-dist-unit"> km</span>${hasGPS?' <span style="font-size:10px;color:var(--accent2);margin-left:4px">📍</span>':''}</div>
-          <div class="run-metrics">
-            <div class="run-metric"><div class="run-metric-val">${fmtDuration(r.duration)}</div><div class="run-metric-lbl">Durée</div></div>
-            ${pace?`<div class="run-metric"><div class="run-metric-val">${fmtPace(pace).replace(' /km','')}</div><div class="run-metric-lbl">Allure</div></div>`:''}
-            ${r.avgHR?`<div class="run-metric"><div class="run-metric-val" style="color:var(--red)">${r.avgHR} <span style="font-size:11px;color:var(--muted)">bpm</span></div><div class="run-metric-lbl">FC moy.</div></div>`:''}
-            ${r.elevationGain?`<div class="run-metric"><div class="run-metric-val">+${r.elevationGain}m</div><div class="run-metric-lbl">Dénivelé</div></div>`:''}
-            ${zBadge}
-          </div>
-        </div>
-        ${r.notes?`<div class="run-note">${esc(r.notes)}</div>`:''}
-      </div>
-      <div class="run-actions" onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="openRunModal('${r.id}')">Modifier</button></div>
-    </div>`;
+    const gpsPin=hasGPS?'<span style="font-size:10px;color:var(--accent2);margin-left:4px">📍</span>':'';
+    const paceHtml=pace?'<div class="run-metric"><div class="run-metric-val">'+fmtPace(pace).replace(' /km','')+'</div><div class="run-metric-lbl">Allure</div></div>':'';
+    const hrHtml=r.avgHR?'<div class="run-metric"><div class="run-metric-val" style="color:var(--red)">'+r.avgHR+' <span style="font-size:11px;color:var(--muted)">bpm</span></div><div class="run-metric-lbl">FC moy.</div></div>':'';
+    const elevHtml=r.elevationGain?'<div class="run-metric"><div class="run-metric-val">+'+r.elevationGain+'m</div><div class="run-metric-lbl">Dénivelé</div></div>':'';
+    const notesHtml=r.notes?'<div class="run-note">'+esc(r.notes)+'</div>':'';
+    const distVal=r.distance?r.distance.toFixed(2):'—';
+    return '<div class="run-card" onclick="openDetail(\''+r.id+'\')">'
+      +'<div class="run-date-col"><div class="run-day">'+day+'</div><div class="run-month">'+mon+'</div></div>'
+      +'<div><div class="run-body">'
+      +'<div><span class="run-dist">'+distVal+'</span><span class="run-dist-unit"> km</span>'+gpsPin+'</div>'
+      +'<div class="run-metrics">'
+      +'<div class="run-metric"><div class="run-metric-val">'+fmtDuration(r.duration)+'</div><div class="run-metric-lbl">Durée</div></div>'
+      +paceHtml+hrHtml+elevHtml+zBadge
+      +'</div></div>'+notesHtml+'</div>'
+      +'<div class="run-actions" onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="openRunModal(\''+r.id+'\')">Modifier</button></div>'
+      +'</div>';
   }).join('');
 }
 
@@ -830,12 +840,10 @@ function renderCalendar() {
     const isToday=ds===todayStr2;
     const hasRun=dayRuns.length>0;
     const totalKm=dayRuns.reduce((s,r)=>s+(r.distance||0),0);
-    const cls=['cal-cell',isToday?'today':'',hasRun?'has-run':'',].filter(Boolean).join(' ');
-    const clickAttr=hasRun?`onclick="calDayClick('${ds}')":``;
-    html+=`<div class="${cls}" ${hasRun?`onclick="calDayClick('${ds}')"`:''}>
-      <span class="cal-num">${day}</span>
-      ${hasRun?`<div class="cal-run-dot"></div><div class="cal-run-km">${totalKm.toFixed(1)} km</div>`:''}
-    </div>`;
+    const cls=['cal-cell',isToday?'today':'',hasRun?'has-run':''].filter(Boolean).join(' ');
+    const clickStr=hasRun?'onclick="calDayClick(\''+ds+'\')"':'';
+    const innerExtra=hasRun?'<div class="cal-run-dot"></div><div class="cal-run-km">'+totalKm.toFixed(1)+' km</div>':'';
+    html+='<div class="'+cls+'" '+clickStr+'><span class="cal-num">'+day+'</span>'+innerExtra+'</div>';
   }
   // Pad after
   const remaining=(7-(startDow+lastDay.getDate())%7)%7;
@@ -863,13 +871,16 @@ async function openDetail(runId) {
   // Stats bar
   const pace=run.distance&&run.duration?calcPaceSec(run.distance,run.duration):null;
   const zone=getZone(run.avgHR);
-  document.getElementById('detailStats').innerHTML=[
-    {v:run.distance?run.distance.toFixed(2):'—',u:'km',l:'Distance'},
-    {v:fmtDuration(run.duration),u:'',l:'Durée'},
-    {v:pace?fmtPace(pace).replace(' /km',''):'—',u:pace?'/km':'',l:'Allure'},
-    {v:run.avgHR||(zone?`<span style="color:${zone.color}">Z${zone.num}</span>`:'—'),u:run.avgHR?'<span style="font-size:10px">bpm</span>':'',l:'FC moy.'},
-    {v:run.elevationGain?'+'+run.elevationGain:'—',u:run.elevationGain?'m':'',l:'Dénivelé +'},
-  ].map(s=>`<div class="detail-stat"><div class="detail-stat-val">${s.v}<span class="detail-stat-unit">${s.u}</span></div><div class="detail-stat-lbl">${s.l}</div></div>`).join('');
+  const zoneHtml=zone?'<span style="color:'+zone.color+'">Z'+zone.num+'</span>':'—';
+  const hrVal=run.avgHR?String(run.avgHR):zoneHtml;
+  const hrUnit=run.avgHR?'<span style="font-size:10px">bpm</span>':'';
+  const mkStat=(v,u,l)=>'<div class="detail-stat"><div class="detail-stat-val">'+v+'<span class="detail-stat-unit">'+u+'</span></div><div class="detail-stat-lbl">'+l+'</div></div>';
+  document.getElementById('detailStats').innerHTML=
+    mkStat(run.distance?run.distance.toFixed(2):'—','km','Distance')+
+    mkStat(fmtDuration(run.duration),'','Durée')+
+    mkStat(pace?fmtPace(pace).replace(' /km',''):'—',pace?'/km':'','Allure')+
+    mkStat(hrVal,hrUnit,'FC moy.')+
+    mkStat(run.elevationGain?'+'+run.elevationGain:'—',run.elevationGain?'m':'','Dénivelé +');
 
   // Show modal first (so map has container dimensions)
   document.getElementById('detailOverlay').classList.add('open');
