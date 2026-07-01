@@ -165,7 +165,7 @@
   .modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;}
 
   /* Detail stats bar */
-  .detail-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+  .detail-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;}
   .detail-stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;}
   .detail-stat-val{font-size:20px;font-weight:800;color:var(--accent);line-height:1;}
   .detail-stat-unit{font-size:11px;color:var(--muted);}
@@ -206,7 +206,7 @@
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .charts-row{grid-template-columns:1fr;}
     .prs-row{grid-template-columns:1fr 1fr;}
-    .detail-stats{grid-template-columns:repeat(3,1fr);}
+    .detail-stats{grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;}
     main{padding:16px;}
     header{padding:0 16px;}
     .sync-bar{padding:8px 16px;}
@@ -384,6 +384,12 @@
         <div class="detail-chart-wrap"><canvas id="detailPaceCanvas"></canvas></div>
       </div>
 
+      <!-- Elevation chart -->
+      <div class="detail-section" id="sectionElev" style="display:none">
+        <div class="detail-section-title">⛰️ Profil altimétrique</div>
+        <div class="detail-chart-wrap"><canvas id="detailElevCanvas"></canvas></div>
+      </div>
+
       <!-- No GPS notice -->
       <div class="detail-no-gps" id="sectionNoGPS" style="display:none">
         📂 Importe un fichier <strong>.TCX</strong> pour voir le tracé GPS, la FC et l'allure détaillés.
@@ -486,7 +492,7 @@ let runs = [], settings = { hrMax: 190 };
 let currentPeriod = 'month', editingId = null, currentDetailId = null;
 let _db = null, _auth = null, _user = null, _saveTimer = null;
 let chartWeekly = null, chartPace = null;
-let detailHRChart = null, detailPaceChart = null, _leafletMap = null;
+let detailHRChart = null, detailPaceChart = null, detailElevChart = null, _leafletMap = null;
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 
 // ── FIREBASE ─────────────────────────────────────────────────────────────────
@@ -880,7 +886,8 @@ async function openDetail(runId) {
     mkStat(fmtDuration(run.duration),'','Durée')+
     mkStat(pace?fmtPace(pace).replace(' /km',''):'—',pace?'/km':'','Allure')+
     mkStat(hrVal,hrUnit,'FC moy.')+
-    mkStat(run.elevationGain?'+'+run.elevationGain:'—',run.elevationGain?'m':'','Dénivelé +');
+    mkStat(run.elevationGain?'+'+run.elevationGain:'—',run.elevationGain?'m':'','Dénivelé +')+
+    mkStat(run.elevationLoss?'-'+run.elevationLoss:'—',run.elevationLoss?'m':'','Dénivelé −');
 
   // Show modal first (so map has container dimensions)
   document.getElementById('detailOverlay').classList.add('open');
@@ -896,8 +903,9 @@ async function openDetail(runId) {
     renderDetailMap(tps);
     renderDetailHRChart(tps);
     renderDetailPaceChart(tps);
+    renderDetailElevChart(tps);
   } else {
-    ['sectionMap','sectionHR','sectionPace'].forEach(id=>document.getElementById(id).style.display='none');
+    ['sectionMap','sectionHR','sectionPace','sectionElev'].forEach(id=>document.getElementById(id).style.display='none');
     document.getElementById('sectionNoGPS').style.display='block';
   }
 }
@@ -907,6 +915,7 @@ function closeDetail() {
   if (_leafletMap) { _leafletMap.remove(); _leafletMap=null; }
   if (detailHRChart) { detailHRChart.destroy(); detailHRChart=null; }
   if (detailPaceChart) { detailPaceChart.destroy(); detailPaceChart=null; }
+  if (detailElevChart) { detailElevChart.destroy(); detailElevChart=null; }
   currentDetailId=null;
 }
 
@@ -980,6 +989,34 @@ function renderDetailPaceChart(tps) {
   });
 }
 
+function renderDetailElevChart(tps) {
+  const elevTps=tps.filter(tp=>tp.e!==undefined&&tp.d!==undefined);
+  if(elevTps.length<4){document.getElementById('sectionElev').style.display='none';return;}
+  document.getElementById('sectionElev').style.display='block';
+  if(detailElevChart){detailElevChart.destroy();detailElevChart=null;}
+  // Downsample to ~200 points for chart performance
+  const step=Math.max(1,Math.ceil(elevTps.length/200));
+  const pts=elevTps.filter((_,i)=>i%step===0);
+  const labels=pts.map(tp=>(tp.d/1000).toFixed(2));
+  const data=pts.map(tp=>tp.e);
+  const minE=Math.min(...data), maxE=Math.max(...data);
+  detailElevChart=new Chart(document.getElementById('detailElevCanvas').getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[{data,borderColor:'#34d399',backgroundColor:'#34d39930',fill:true,tension:.3,pointRadius:0,borderWidth:2}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'#1a1d27',borderColor:'#2e3248',borderWidth:1,titleColor:'#e2e4f0',bodyColor:'#8b90a8',padding:10,
+        callbacks:{title:items=>'km '+items[0].label,label:item=>item.raw.toFixed(0)+' m'}
+      }},
+      scales:{
+        x:{grid:{color:'#2e3248'},ticks:{color:'#8b90a8',font:{size:10},maxTicksLimit:8,callback:v=>v+' km'}},
+        y:{grid:{color:'#2e3248'},ticks:{color:'#8b90a8',font:{size:11},callback:v=>v+' m'},min:Math.floor((minE-5)/10)*10,max:Math.ceil((maxE+5)/10)*10}
+      }
+    }
+  });
+}
+
 // ── TCX IMPORT ───────────────────────────────────────────────────────────────
 function handleTCXFile(event) {
   const file=event.target.files[0]; event.target.value='';
@@ -1018,10 +1055,15 @@ function parseTCX(xmlText) {
     let avgHR=null;
     if (lapHRData.length) { const tt=lapHRData.reduce((s,x)=>s+x.t,0); if(tt>0) avgHR=Math.round(lapHRData.reduce((s,x)=>s+x.hr*x.t,0)/tt); }
 
-    // Elevation gain
-    const alts=gAll(xml,'AltitudeMeters').map(el=>parseFloat(el.textContent)).filter(v=>!isNaN(v));
-    let elevGain=0;
-    for(let i=1;i<alts.length;i++){const d=alts[i]-alts[i-1];if(d>2)elevGain+=d;}
+    // Elevation gain — from trackpoints only, with smoothing to filter GPS noise
+    const rawTPsForElev=gAll(xml,'Trackpoint');
+    const rawAlts=rawTPsForElev.map(tp=>{const el=g(tp,'AltitudeMeters');return el?parseFloat(el.textContent):NaN;}).filter(v=>!isNaN(v)&&v>-500&&v<9000);
+    let elevGain=0, elevLoss=0;
+    if(rawAlts.length>4){
+      // 5-point moving average to remove GPS noise
+      const smoothed=rawAlts.map((_,i,a)=>{const w=a.slice(Math.max(0,i-2),Math.min(a.length,i+3));return w.reduce((s,v)=>s+v,0)/w.length;});
+      for(let i=1;i<smoothed.length;i++){const diff=smoothed[i]-smoothed[i-1];if(diff>0)elevGain+=diff;else elevLoss+=Math.abs(diff);}
+    }
 
     // Fallback avg HR from trackpoints
     if (!avgHR) { const hrs=gAll(xml,'Trackpoint').map(tp=>{const el=g(tp,'HeartRateBpm');return el?parseInt(txt(el,'Value')):NaN;}).filter(v=>!isNaN(v)&&v>0); if(hrs.length) avgHR=Math.round(hrs.reduce((s,v)=>s+v,0)/hrs.length); }
@@ -1044,11 +1086,12 @@ function parseTCX(xmlText) {
       if(latEl&&lngEl){point.la=Math.round(parseFloat(latEl.textContent)*100000)/100000;point.lo=Math.round(parseFloat(lngEl.textContent)*100000)/100000;}
       if(hrEl){const v=parseInt(txt(hrEl,'Value'));if(v>0)point.h=v;}
       if(distEl){const v=parseFloat(distEl.textContent);if(!isNaN(v))point.d=Math.round(v);}
+      const altEl=g(tp,'AltitudeMeters');if(altEl){const v=parseFloat(altEl.textContent);if(!isNaN(v)&&v>-500&&v<9000)point.e=Math.round(v*10)/10;}
       if(Object.keys(point).length>1) tps.push(point);
     });
 
     // Build run object
-    const runData={date,distance:Math.round(totalDistM/10)/100,duration:Math.round(totalTimeSec),avgHR:avgHR||null,maxHR:maxHR||null,elevationGain:elevGain?Math.round(elevGain):null,elevationLoss:null,notes:''};
+    const runData={date,distance:Math.round(totalDistM/10)/100,duration:Math.round(totalTimeSec),avgHR:avgHR||null,maxHR:maxHR||null,elevationGain:elevGain?Math.round(elevGain):null,elevationLoss:elevLoss?Math.round(elevLoss):null,notes:''};
     openRunModal(null,runData,tps);
 
     // Reverse geocode in background
