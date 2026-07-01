@@ -464,22 +464,27 @@ function initFirebase(config) {
 function doFbConfig() {
   let raw = document.getElementById('fbConfigInput').value.trim();
   if (!raw) { showSetupError('Colle la config Firebase ci-dessus.', 'setupError'); return; }
-  // Accepte le format JS (const firebaseConfig = {...}) et les clés sans guillemets
+  // Normalize smart quotes
+  raw = raw.replace(/[""«»„‟]/g,'"').replace(/[''‚‛]/g,"'");
+  // Strip variable assignment: const firebaseConfig = {...}
   raw = raw.replace(/^(?:const|let|var)\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '').trim();
+  // Strip wrapping parentheses: ({...}) → {...}
+  raw = raw.replace(/^\(?\s*(\{[\s\S]*\})\s*\)?$/, '$1').trim();
+  // Quote unquoted keys
   raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
   let config;
   try {
     config = JSON.parse(raw);
-    if (!config.apiKey || !config.databaseURL) throw new Error('champs manquants');
+    if (!config.apiKey || !config.databaseURL) throw new Error('champs manquants (apiKey ou databaseURL)');
   } catch(e) {
     showSetupError('Config invalide — ' + e.message + '. Copie le bloc { apiKey: "…", … } depuis Firebase Console.', 'setupError');
+    document.getElementById('setupError').scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
   localStorage.setItem(LS_FB_CONFIG, JSON.stringify(config));
   document.getElementById('configNextBtn').disabled = true;
-  document.getElementById('configNextBtn').textContent = 'Connexion…';
+  document.getElementById('configNextBtn').textContent = 'Connexion en cours…';
   initFirebase(config);
-  // onAuthStateChanged will transition to screenAuth automatically if not logged in
 }
 
 function goBackToConfig() {

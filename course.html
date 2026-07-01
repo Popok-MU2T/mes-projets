@@ -510,21 +510,35 @@ function initFirebase(config) {
 }
 
 function doFbConfig() {
-  let raw = document.getElementById('fbConfigInput').value.trim();
-  if (!raw) { showSetupError('Colle la config Firebase.','setupError'); return; }
-  raw = raw.replace(/[""«»„‟]/g,'"').replace(/[''‚‛]/g,"'");
-  raw = raw.replace(/^(?:const|let|var)\s+\w+\s*=\s*/,'').replace(/;?\s*$/,'').trim();
-  raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g,'$1"$2"$3');
-  let config;
   try {
-    config = JSON.parse(raw);
-    if (!config.apiKey) throw new Error('apiKey manquant');
-    if (!config.databaseURL) throw new Error('databaseURL manquant — vérifie que Realtime Database est activée');
-  } catch(e) { showSetupError('Format invalide : '+e.message,'setupError'); return; }
-  localStorage.setItem(LS_FB_CONFIG, JSON.stringify(config));
-  document.getElementById('configNextBtn').disabled=true;
-  document.getElementById('configNextBtn').textContent='Connexion…';
-  initFirebase(config);
+    let raw = document.getElementById('fbConfigInput').value.trim();
+    if (!raw) { showSetupError('Colle la config Firebase.','setupError'); return; }
+    // Normalize quotes
+    raw = raw.replace(/[""«»„‟]/g,'"').replace(/[''‚‛]/g,"'");
+    // Strip variable assignment: const firebaseConfig = {...}
+    raw = raw.replace(/^(?:const|let|var)\s+\w+\s*=\s*/,'').replace(/;?\s*$/,'').trim();
+    // Strip wrapping parentheses: ({...}) → {...}
+    raw = raw.replace(/^\(?\s*(\{[\s\S]*\})\s*\)?$/, '$1').trim();
+    // Quote unquoted object keys
+    raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g,'$1"$2"$3');
+    let config;
+    try {
+      config = JSON.parse(raw);
+    } catch(e) {
+      showSetupError('Format JSON invalide — copie le bloc { … } depuis Firebase Console. (' + e.message + ')','setupError');
+      document.getElementById('setupError').scrollIntoView({behavior:'smooth',block:'nearest'});
+      return;
+    }
+    if (!config.apiKey) { showSetupError('apiKey manquant dans la config.','setupError'); return; }
+    if (!config.databaseURL) { showSetupError('databaseURL manquant — vérifie que Realtime Database est bien activée dans Firebase Console.','setupError'); return; }
+    localStorage.setItem(LS_FB_CONFIG, JSON.stringify(config));
+    document.getElementById('configNextBtn').disabled=true;
+    document.getElementById('configNextBtn').textContent='Connexion en cours…';
+    initFirebase(config);
+  } catch(e) {
+    console.error('doFbConfig error:', e);
+    showSetupError('Erreur inattendue : ' + e.message, 'setupError');
+  }
 }
 
 async function doSignIn() {
